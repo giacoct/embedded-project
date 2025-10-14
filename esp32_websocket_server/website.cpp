@@ -2,133 +2,45 @@
 
 const char index_html[] PROGMEM = R"rawliteral(
 
-<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-    <title>ESP Web Server</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="data:,">
-    <style>
-        html {
-            font-family: Arial, Helvetica, sans-serif;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            color: white;
-        }
-
-        h2 {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #143642;
-        }
-
-        .topnav {
-            overflow: hidden;
-            background-color: #143642;
-        }
-
-        body {
-            margin: 0;
-        }
-
-        .content {
-            padding: 30px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background-color: #F8F7F9;
-            ;
-            box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);
-            padding-top: 10px;
-            padding-bottom: 20px;
-        }
-
-        .button {
-            padding: 15px 50px;
-            font-size: 24px;
-            text-align: center;
-            outline: none;
-            color: #fff;
-            background-color: #0f8b8d;
-            border: none;
-            border-radius: 5px;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-        }
-
-        .button:active {
-            background-color: #0f8b8d;
-            box-shadow: 2 2px #CDCDCD;
-            transform: translateY(2px);
-        }
-
-        .state {
-            font-size: 1.5rem;
-            color: #8c8c8c;
-            font-weight: bold;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
 </head>
 
 <body>
-    <div class="topnav">
-        <h1>ESP WebSocket Server</h1>
-    </div>
-    <div class="content">
-        <div class="card">
-            <h2>Output - GPIO 2</h2>
-            <p class="state">state: <span id="state">%STATE%</span></p>
-            <p><button id="button" class="button">Toggle</button></p>
-        </div>
-    </div>
+    <h3>Hello World!</h3>
+
+    <input type="text" name="text" id="text">
+    <button type="button" id="button">Send</button>
 
     <script>
-        var gateway = `ws://${window.location.hostname}/ws`;
-        websocket = new WebSocket(gateway);
-        websocket.onopen = onOpen;
-        websocket.onclose = onClose;
-        websocket.onmessage = onMessage;
-
-        function onOpen(event) {
-            console.log('Connection opened');
-        }
-        function onClose(event) {
-            console.log('Connection closed');
-            setTimeout(initWebSocket, 2000);
-        }
-
-        function onMessage(event) {
-            console.log(event.data)
-            var state;
-            if (event.data == "1") {
-                state = "ON";
-            }
-            else {
-                state = "OFF";
-            }
-            document.getElementById('state').innerHTML = state;
-        }
-
-        document.getElementById('button').addEventListener('click', toggle);
-        function toggle() {
-            websocket.send('toggle');
-        }
+        let connection = new WebSocket("ws://192.168.4.1:81");
+        connection.onopen = function () {
+            connection.send("Connect " + new Date());
+        };
+        connection.onerror = function (error) {
+            console.log("WebSocket Error ", error);
+            alert("WebSocket Error ", error);
+        };
+        connection.onmessage = function (e) {
+            console.log("Received: ", e.data);
+        };
     </script>
+    <script>
+        let textbox = document.getElementById("text");
+        let button = document.getElementById("button");
 
+        button.addEventListener("click", () => {
+            let payload = textbox.value;
 
-
-    hello
+            console.log("Sent: " + payload);
+            connection.send(payload);
+        });
+    </script>
 </body>
 
 </html>
