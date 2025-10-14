@@ -93,11 +93,11 @@
 
       stick.style.transform = `translate(${limitedX}px, ${limitedY}px)`;
 
-      const normX = +(limitedX / maxRadius).toFixed(1);
-      const normY = -(limitedY / maxRadius).toFixed(1);
+      const normX = (+(limitedX / maxRadius).toFixed(1))*10;
+      const normY = (-(limitedY / maxRadius).toFixed(1))*10;
 
       coords.textContent = `X: ${normX}, Y: ${normY}`;
-      if (vecchiX!=normX && vecchiY!=normY){
+      if (vecchiX!=normX || vecchiY!=normY){
         console.log(`X: ${normX}, Y: ${normY}`);
         vecchiX=normX;
         vecchiY=normY;
