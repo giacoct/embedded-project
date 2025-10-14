@@ -1,32 +1,24 @@
-# pip install websockets
+# Requirement: pip install websockets
 import asyncio
 import websockets
-from socket import gethostbyname_ex, gethostname
 
-connections = set()
-HostInfo = gethostbyname_ex(gethostname())
-
-HOST = HostInfo[2][-1]
-PORT = 8080
-
+ip = "127.0.0.1"
+port = 81
 
 async def echo(websocket):
-    connections.add(websocket)
-    try:
-        async for message in websocket:
-            websockets.broadcast(connections, message)
-            print(message)
-    finally:
-        connections.remove(websocket)
-
+    async for message in websocket:
+        print(f"Received: {message}")
+        await websocket.send(f"Echo: {message}")
 
 async def main():
-    print(f"Ip address '{HOST}', port {PORT}")
-    try:
-        async with websockets.serve(echo, HOST, PORT):
-            await asyncio.Future()  # run forever
-    except:
-        exit("\r\n\033[91mERRORE: Indirizzo ip o porta non validi...\033[0m")   # a capo, rosso
+    async with websockets.serve(echo, ip, port):
+        print(f"Server running on ws://{ip}:{port}")
+        try:
+            await asyncio.Future()  # Run forever
+        except asyncio.CancelledError:
+            print("\nServer shutting down... ", end="")
 
-
-asyncio.run(main())
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    print("Server stopped.")
