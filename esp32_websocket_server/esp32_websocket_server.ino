@@ -6,7 +6,8 @@
 const char *ssid = "ALEWEB";
 const char *password = "password";
 
-const int motPin = 23;
+const int motPinForward = 16;
+const int motPinBackwards = 17;
 int motSpeed = 0, servoSpeed = 0;
 
 // Create AsyncWebServer object on port 80
@@ -20,8 +21,15 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
 
     /* CODICE ESEGUITO QUANDO RICEVO UN MESSAGGIO DAL WS */
     String payload = String((char *)data);
-    Serial.println(payload);                // print data recived from websocket
 
+    if (payload.startsWith("#cord#")) {
+      motSpeed = payload.substring(7, payload.indexOf(';')).toInt();
+      servoSpeed = payload.substring(payload.indexOf(';') + 2).toInt();
+
+      Serial.printf("%d \t %d\n", motSpeed, servoSpeed);
+    } else {
+      Serial.println(payload);  // print data recived from websocket
+    }
 
 
     // ws.textAll(String(ledState));  // send a broadcast message
@@ -45,24 +53,15 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   }
 }
 
-String processor(const String &var) {  // replace %DATA% in html file
-  Serial.println(var);
-  // if (var == "STATE") {
-  //   if (ledState) {
-  //     return "ON";
-  //   } else {
-  //     return "OFF";
-  //   }
-  // }
-  return String();
-}
 
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
 
-  pinMode(motPin, OUTPUT);
-  digitalWrite(motPin, LOW);
+  pinMode(motPinForward, OUTPUT);
+  pinMode(motPinBackwards, OUTPUT);
+  digitalWrite(motPinForward, LOW);
+  digitalWrite(motPinBackwards, LOW);
 
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
@@ -89,5 +88,13 @@ void setup() {
 
 void loop() {
   ws.cleanupClients();  // delete disconnected clients
-  
+
+  // motor drive with h-bridge
+  if (motSpeed > 0) {
+    analogWrite(motPinForward, map(motSpeed, 0, 10, 0, 255));
+    analogWrite(motPinBackwards, 0);
+  } else {
+    analogWrite(motPinForward, 0);
+    analogWrite(motPinBackwards, map(motSpeed, 0, -10, 0, 255));
+  }
 }

@@ -84,7 +84,9 @@
       dragging = false;
       stick.style.transform = `translate(0px, 0px)`;
       coords.textContent = `X: 0, Y: 0`;
-      console.log(`X: 0, Y: 0`);
+
+      console.log(`#cord#X0;Y0`);
+      connection.send(`#cord#X0;Y0`);
     });
 
     document.addEventListener('mousemove', (e) => {
@@ -108,8 +110,9 @@
       if (vecchiX != normX || vecchiY != normY) {
         vecchiX = normX;
         vecchiY = normY;
-        console.log(`X: ${normX}, Y: ${normY}`);
-        connection.send(`X${normX};Y${normY}`);
+        
+        console.log(`X${normX};Y${normY}`);
+        connection.send(`#cord#X${normX};Y${normY}`);
       }
 
     });
