@@ -75,8 +75,8 @@
     let vecchiX = 0;
     let vecchiY = 0;
 
-    const maxRadius = 80; // distanza massima dal centro
-    const center = { x: 100, y: 100 }; // centro del joystick
+    const maxRadius = 80; /* distanza massima dal centro*/
+    const center = { x: 100, y: 100 }; /* centro del joystick*/
     let dragging = false;
 
     joystick.addEventListener('mousedown', () => dragging = true);
@@ -95,10 +95,10 @@
       const x = e.clientX - rect.left - center.x;
       const y = e.clientY - rect.top - center.y;
 
-      // const distance = Math.min(Math.sqrt(x*x + y*y), maxRadius);
-      // const angle = Math.atan2(y, x);
-      // const limitedX = Math.cos(angle) * distance;
-      // const limitedY = Math.sin(angle) * distance;
+      /* const distance = Math.min(Math.sqrt(x*x + y*y), maxRadius);
+       const angle = Math.atan2(y, x);
+       const limitedX = Math.cos(angle) * distance;
+       const limitedY = Math.sin(angle) * distance;*/
 
       let limitedX = Math.min(x, maxRadius);
       let limitedY = Math.min(y, maxRadius);
