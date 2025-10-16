@@ -1,14 +1,21 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <ESP32Servo.h>         // version=3.0.3
 #include "website.cpp"
 
 const char *ssid = "ALEWEB";
 const char *password = "password";
 
+unsigned long int t;
+
 const int motPinForward = 16;
 const int motPinBackwards = 17;
+const int servoPin = 18;
+
 int motSpeed = 0, servoSpeed = 0;
+int servoPos = 90;
+Servo servo1;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -25,12 +32,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
     if (payload.startsWith("#cord#")) {
       motSpeed = payload.substring(7, payload.indexOf(';')).toInt();
       servoSpeed = payload.substring(payload.indexOf(';') + 2).toInt();
-
-      Serial.printf("%d \t %d\n", motSpeed, servoSpeed);
+      Serial.printf("Mot:%d\tServo:%d\n", motSpeed, servoSpeed);
     } else {
       Serial.println(payload);  // print data recived from websocket
     }
-
 
     // ws.textAll(String(ledState));  // send a broadcast message
   }
@@ -63,6 +68,8 @@ void setup() {
   digitalWrite(motPinForward, LOW);
   digitalWrite(motPinBackwards, LOW);
 
+  servo1.attach(servoPin);  // servo setup
+
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
@@ -84,6 +91,10 @@ void setup() {
 
   // Start server
   server.begin();
+
+  // Initialize timer
+  t = millis();
+  servo1.write(servoPos);
 }
 
 void loop() {
@@ -97,4 +108,17 @@ void loop() {
     analogWrite(motPinForward, 0);
     analogWrite(motPinBackwards, map(motSpeed, 0, -10, 0, 255));
   }
+
+  // servo drive
+  int interval = map(abs(servoSpeed), 0, 10, 200, 1);
+  if (t + interval < millis()) {
+    if (servoSpeed > 0) {
+      servoPos = (servoPos < 180) ? servoPos + 1 : 180;
+    } else if (servoSpeed < 0) {
+      servoPos = (servoPos > 0) ? servoPos - 1 : 0;
+    }
+    servo1.write(servoPos);
+    t = millis();
+  }
+
 }
