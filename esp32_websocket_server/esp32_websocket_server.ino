@@ -7,6 +7,7 @@ const char *ssid = "ALEWEB";
 const char *password = "password";
 
 const int motPin = 23;
+int motSpeed = 0, servoSpeed = 0;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -19,7 +20,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
 
     /* CODICE ESEGUITO QUANDO RICEVO UN MESSAGGIO DAL WS */
     String payload = String((char *)data);
-    Serial.println(payload);  // print data recived from websocket
+    Serial.println(payload);                // print data recived from websocket
+
+
 
     // ws.textAll(String(ledState));  // send a broadcast message
   }
@@ -77,7 +80,7 @@ void setup() {
 
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send_P(200, "text/html", index_html, processor);
+    request->send_P(200, "text/html", index_html);
   });
 
   // Start server

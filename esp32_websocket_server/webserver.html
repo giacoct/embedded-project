@@ -87,18 +87,12 @@
       console.log(`X: 0, Y: 0`);
     });
 
-
     document.addEventListener('mousemove', (e) => {
       if (!dragging) return;
 
       const rect = joystick.getBoundingClientRect();
       const x = e.clientX - rect.left - center.x;
       const y = e.clientY - rect.top - center.y;
-
-      // const distance = Math.min(Math.sqrt(x*x + y*y), maxRadius);
-      // const angle = Math.atan2(y, x);
-      // const limitedX = Math.cos(angle) * distance;
-      // const limitedY = Math.sin(angle) * distance;
 
       let limitedX = Math.min(x, maxRadius);
       let limitedY = Math.min(y, maxRadius);
@@ -120,7 +114,6 @@
 
     });
   </script>
-
 </body>
 
 </html>
