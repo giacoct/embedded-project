@@ -1,3 +1,8 @@
+/* Requirements
+ *  => ESPAsyncWebServer: https://github.com/ESP32Async/ESPAsyncWebServer/
+ *  => AsyncTCP: https://github.com/ESP32Async/AsyncTCP/
+ *  => ESP32Servo [version=3.0.3]: https://github.com/madhephaestus/ESP32Servo
+*/
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -37,7 +42,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
       Serial.println(payload);  // print data recived from websocket
     }
 
-    // ws.textAll(String(ledState));  // send a broadcast message
+    // ws.textAll("hello world");  // send a broadcast message
   }
 }
 
