@@ -1,3 +1,8 @@
+/* Requirements
+ *  => ESPAsyncWebServer: https://github.com/ESP32Async/ESPAsyncWebServer/
+ *  => AsyncTCP: https://github.com/ESP32Async/AsyncTCP/
+*/
+
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -48,7 +53,7 @@ String processor(const String& var) {   // replace %DATA% in html file
   if (var == "STATE") {
     if (ledState) {
       return "ON";
-    }
+    } 
     else {
       return "OFF";
     }
@@ -76,7 +81,7 @@ void setup() {
   // initialize websocket
   ws.onEvent(onEvent);
   server.addHandler(&ws);
-  
+
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/html", index_html, processor);
@@ -87,6 +92,6 @@ void setup() {
 }
 
 void loop() {
-  ws.cleanupClients();      // delete disconnected clients 
+  ws.cleanupClients();      // delete disconnected clients
   digitalWrite(ledPin, ledState);
 }
