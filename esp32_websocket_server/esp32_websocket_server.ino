@@ -1,8 +1,8 @@
 /* Requirements
  *  => ESPAsyncWebServer: https://github.com/ESP32Async/ESPAsyncWebServer/
  *  => AsyncTCP: https://github.com/ESP32Async/AsyncTCP/
+ *  => ESP32Servo [version=3.0.3]: https://github.com/madhephaestus/ESP32Servo
 */
-
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -42,7 +42,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
       Serial.println(payload);  // print data recived from websocket
     }
 
-    // ws.textAll(String(ledState));  // send a broadcast message
+    // ws.textAll("hello world");  // send a broadcast message
   }
 }
 
@@ -63,21 +63,6 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   }
 }
 
-<<<<<<< HEAD
-String processor(const String& var) {   // replace %DATA% in html file
-  Serial.println(var);
-  if (var == "STATE") {
-    if (ledState) {
-      return "ON";
-    } 
-    else {
-      return "OFF";
-    }
-  }
-  return String();
-}
-=======
->>>>>>> e4c488465b2961f879407a35ad6e97dc32904215
 
 void setup() {
   // Serial port for debugging purposes
@@ -118,10 +103,6 @@ void setup() {
 }
 
 void loop() {
-<<<<<<< HEAD
-  ws.cleanupClients();      // delete disconnected clients
-  digitalWrite(ledPin, ledState);
-=======
   ws.cleanupClients();  // delete disconnected clients
 
   // motor drive with h-bridge
@@ -145,5 +126,4 @@ void loop() {
     t = millis();
   }
 
->>>>>>> e4c488465b2961f879407a35ad6e97dc32904215
 }
