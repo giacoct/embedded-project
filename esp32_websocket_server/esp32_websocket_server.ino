@@ -6,32 +6,47 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <ESP32Servo.h>         // version=3.0.3
 #include "website.cpp"
 
-const char* ssid = "Linkem_FCD881_EXT";
-const char* password = "d29vust7";
+const char *ssid = "ALEWEB";
+const char *password = "password";
 
-bool ledState = 0;
-const int ledPin = 23;
+unsigned long int t;
+
+const int motPinForward = 16;
+const int motPinBackwards = 17;
+const int servoPin = 18;
+
+int motSpeed = 0, servoSpeed = 0;
+int servoPos = 90;
+Servo servo1;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {   // called on websocket's incoming message
-  AwsFrameInfo *info = (AwsFrameInfo*)arg;
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called on websocket's incoming message
+  AwsFrameInfo *info = (AwsFrameInfo *)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
     data[len] = 0;
-    Serial.println((char*)data);  // print data recived from websocket
-    if (strcmp((char*)data, "toggle") == 0) {
-      ledState = !ledState;
-      ws.textAll(String(ledState));   // send a broadcast message
+
+    /* CODICE ESEGUITO QUANDO RICEVO UN MESSAGGIO DAL WS */
+    String payload = String((char *)data);
+
+    if (payload.startsWith("#cord#")) {
+      motSpeed = payload.substring(7, payload.indexOf(';')).toInt();
+      servoSpeed = payload.substring(payload.indexOf(';') + 2).toInt();
+      Serial.printf("Mot:%d\tServo:%d\n", motSpeed, servoSpeed);
+    } else {
+      Serial.println(payload);  // print data recived from websocket
     }
+
+    // ws.textAll(String(ledState));  // send a broadcast message
   }
 }
 
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
-             void *arg, uint8_t *data, size_t len) {
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
   switch (type) {
     case WS_EVT_CONNECT:
       Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
@@ -48,6 +63,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   }
 }
 
+<<<<<<< HEAD
 String processor(const String& var) {   // replace %DATA% in html file
   Serial.println(var);
   if (var == "STATE") {
@@ -60,13 +76,19 @@ String processor(const String& var) {   // replace %DATA% in html file
   }
   return String();
 }
+=======
+>>>>>>> e4c488465b2961f879407a35ad6e97dc32904215
 
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
 
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, LOW);
+  pinMode(motPinForward, OUTPUT);
+  pinMode(motPinBackwards, OUTPUT);
+  digitalWrite(motPinForward, LOW);
+  digitalWrite(motPinBackwards, LOW);
+
+  servo1.attach(servoPin);  // servo setup
 
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
@@ -83,15 +105,45 @@ void setup() {
   server.addHandler(&ws);
 
   // Route for root / web page
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request->send_P(200, "text/html", index_html, processor);
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send_P(200, "text/html", index_html);
   });
 
   // Start server
   server.begin();
+
+  // Initialize timer
+  t = millis();
+  servo1.write(servoPos);
 }
 
 void loop() {
+<<<<<<< HEAD
   ws.cleanupClients();      // delete disconnected clients
   digitalWrite(ledPin, ledState);
+=======
+  ws.cleanupClients();  // delete disconnected clients
+
+  // motor drive with h-bridge
+  if (motSpeed > 0) {
+    analogWrite(motPinForward, map(motSpeed, 0, 10, 0, 255));
+    analogWrite(motPinBackwards, 0);
+  } else {
+    analogWrite(motPinForward, 0);
+    analogWrite(motPinBackwards, map(motSpeed, 0, -10, 0, 255));
+  }
+
+  // servo drive
+  int interval = map(abs(servoSpeed), 0, 10, 200, 1);
+  if (t + interval < millis()) {
+    if (servoSpeed > 0) {
+      servoPos = (servoPos < 180) ? servoPos + 1 : 180;
+    } else if (servoSpeed < 0) {
+      servoPos = (servoPos > 0) ? servoPos - 1 : 0;
+    }
+    servo1.write(servoPos);
+    t = millis();
+  }
+
+>>>>>>> e4c488465b2961f879407a35ad6e97dc32904215
 }

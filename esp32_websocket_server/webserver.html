@@ -54,7 +54,7 @@
   <div class="coords" id="coords">X: 0, Y: 0</div>
 
   <script>
-    let connection = new WebSocket("ws://127.0.0.1:81");
+    let connection = new WebSocket("ws://192.168.137.233/ws");
     connection.onopen = function () {
       connection.send("Connect " + new Date());
     };
@@ -75,8 +75,8 @@
     let vecchiX = 0;
     let vecchiY = 0;
 
-    const maxRadius = 80; // distanza massima dal centro
-    const center = { x: 100, y: 100 }; // centro del joystick
+    const maxRadius = 80; /* distanza massima dal centro*/
+    const center = { x: 100, y: 100 }; /* centro del joystick*/
     let dragging = false;
 
     joystick.addEventListener('mousedown', () => dragging = true);
@@ -84,9 +84,10 @@
       dragging = false;
       stick.style.transform = `translate(0px, 0px)`;
       coords.textContent = `X: 0, Y: 0`;
-      console.log(`X: 0, Y: 0`);
-    });
 
+      console.log(`#cord#X0;Y0`);
+      connection.send(`#cord#X0;Y0`);
+    });
 
     document.addEventListener('mousemove', (e) => {
       if (!dragging) return;
@@ -94,11 +95,6 @@
       const rect = joystick.getBoundingClientRect();
       const x = e.clientX - rect.left - center.x;
       const y = e.clientY - rect.top - center.y;
-
-      // const distance = Math.min(Math.sqrt(x*x + y*y), maxRadius);
-      // const angle = Math.atan2(y, x);
-      // const limitedX = Math.cos(angle) * distance;
-      // const limitedY = Math.sin(angle) * distance;
 
       let limitedX = Math.min(x, maxRadius);
       let limitedY = Math.min(y, maxRadius);
@@ -114,13 +110,13 @@
       if (vecchiX != normX || vecchiY != normY) {
         vecchiX = normX;
         vecchiY = normY;
-        console.log(`X: ${normX}, Y: ${normY}`);
-        connection.send(`X${normX};Y${normY}`);
+        
+        console.log(`X${normX};Y${normY}`);
+        connection.send(`#cord#X${normX};Y${normY}`);
       }
 
     });
   </script>
-
 </body>
 
 </html>
