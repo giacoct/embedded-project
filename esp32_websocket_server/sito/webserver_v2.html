@@ -84,69 +84,43 @@
     const center = { x: 100, y: 100 }; /* centro del joystick*/
     let dragging = false;
 
-    function startDrag(e) {
-      dragging = true;
-    }
-    // joystick.addEventListener('pointerdown', () => dragging = true);
-    function endDrag(e) {
-      dragging = false;
-      stick.style.transform = `translate(0px, 0px)`;
-      coords.textContent = `X: 0, Y: 0`;
-
-      console.log(`#cord#X0;Y0`);
-      connection.send(`#cord#X0;Y0`);
-    }
-    // document.addEventListener('pointerup', () => {
+    // function startDrag(e) {
+    //   dragging = true;
+    // }
+    joystick.addEventListener('pointerdown', () => dragging = true);
+    // function endDrag(e) {
     //   dragging = false;
     //   stick.style.transform = `translate(0px, 0px)`;
     //   coords.textContent = `X: 0, Y: 0`;
 
     //   console.log(`#cord#X0;Y0`);
     //   connection.send(`#cord#X0;Y0`);
-    // });
-    function moveStick(e) {
-      if (!dragging) return;
-      e.preventDefault(); // evita lo scroll su telefono
+    // }
+    document.addEventListener('pointerup', () => {
+      dragging = false;
+      stick.style.transform = `translate(0px, 0px)`;
+      coords.textContent = `X: 0, Y: 0`;
 
-
-      let clientX, clientY;
-      if (e.type === 'touchmove') {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
-
-      const rect = joystick.getBoundingClientRect();
-      const x = clientX - rect.left - center.x;
-      const y = clientY - rect.top - center.y;
-
-      let limitedX = Math.min(x, maxRadius);
-      let limitedY = Math.min(y, maxRadius);
-      limitedX = Math.max(limitedX, -maxRadius);
-      limitedY = Math.max(limitedY, -maxRadius);
-
-      stick.style.transform = `translate(${limitedX}px, ${limitedY}px)`;
-
-      const normX = (+(limitedX / maxRadius).toFixed(1)) * 10;
-      const normY = (-(limitedY / maxRadius).toFixed(1)) * 10;
-
-      coords.textContent = `X: ${normX}, Y: ${normY}`;
-      if (vecchiX != normX || vecchiY != normY) {
-        vecchiX = normX;
-        vecchiY = normY;
-
-        console.log(`X${normX};Y${normY}`);
-        connection.send(`#cord#X${normX};Y${normY}`);
-      }
-    }
-    // document.addEventListener('pointermove', (e) => {
+      console.log(`#cord#X0;Y0`);
+      connection.send(`#cord#X0;Y0`);
+    });
+    // function moveStick(e) {
     //   if (!dragging) return;
+    //   e.preventDefault(); // evita lo scroll su telefono
+
+
+    //   let clientX, clientY;
+    //   if (e.type === 'touchmove') {
+    //     clientX = e.touches[0].clientX;
+    //     clientY = e.touches[0].clientY;
+    //   } else {
+    //     clientX = e.clientX;
+    //     clientY = e.clientY;
+    //   }
 
     //   const rect = joystick.getBoundingClientRect();
-    //   const x = e.clientX - rect.left - center.x;
-    //   const y = e.clientY - rect.top - center.y;
+    //   const x = clientX - rect.left - center.x;
+    //   const y = clientY - rect.top - center.y;
 
     //   let limitedX = Math.min(x, maxRadius);
     //   let limitedY = Math.min(y, maxRadius);
@@ -166,17 +140,43 @@
     //     console.log(`X${normX};Y${normY}`);
     //     connection.send(`#cord#X${normX};Y${normY}`);
     //   }
+    // }
+    document.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
 
-    // });
+      const rect = joystick.getBoundingClientRect();
+      const x = e.clientX - rect.left - center.x;
+      const y = e.clientY - rect.top - center.y;
 
-    joystick.addEventListener('mousedown', startDrag);
-    joystick.addEventListener('touchstart', startDrag, { passive: false });
+      let limitedX = Math.min(x, maxRadius);
+      let limitedY = Math.min(y, maxRadius);
+      limitedX = Math.max(limitedX, -maxRadius);
+      limitedY = Math.max(limitedY, -maxRadius);
 
-    document.addEventListener('mouseup', endDrag);
-    document.addEventListener('touchend', endDrag, { passive: false });
+      stick.style.transform = `translate(${limitedX}px, ${limitedY}px)`;
 
-    document.addEventListener('mousemove', moveStick);
-    document.addEventListener('touchmove', moveStick, { passive: false });
+      const normX = (+(limitedX / maxRadius).toFixed(1)) * 10;
+      const normY = (-(limitedY / maxRadius).toFixed(1)) * 10;
+
+      coords.textContent = `X: ${normX}, Y: ${normY}`;
+      if (vecchiX != normX || vecchiY != normY) {
+        vecchiX = normX;
+        vecchiY = normY;
+
+        console.log(`X${normX};Y${normY}`);
+        connection.send(`#cord#X${normX};Y${normY}`);
+      }
+
+    });
+
+    // joystick.addEventListener('mousedown', startDrag);
+    // joystick.addEventListener('touchstart', startDrag, { passive: false });
+
+    // document.addEventListener('mouseup', endDrag);
+    // document.addEventListener('touchend', endDrag, { passive: false });
+
+    // document.addEventListener('mousemove', moveStick);
+    // document.addEventListener('touchmove', moveStick, { passive: false });
 
 
   </script>
