@@ -45,19 +45,20 @@
       cursor: grab;
     }
 
-    .coords {
+    .text {
       margin-top: 20px;
+      margin-bottom: 20px;
       font-size: 1.2em;
     }
   </style>
 </head>
 
 <body>
-  <div class="ws_info" id="ws_info">Connecting...</div>
+  <div class="text" id="ws_info">Connecting...</div>
   <div class="joystick-container" id="joystick">
     <div class="stick" id="stick"></div>
   </div>
-  <div class="coords" id="coords">X: 0, Y: 0</div>
+  <div class="text" id="coords">X: 0, Y: 0</div>
 
   <script>
     const ws_info = document.getElementById('ws_info');
@@ -66,10 +67,12 @@
     connection.onopen = function () {
       connection.send("Connect " + new Date());
       ws_info.textContent = `Connected!`;
+      ws_info.style.color = "#069c56";
     };
     connection.onerror = function (error) {
       console.log("WebSocket Error ", error);
-      ws_info.textContent = `WebSocket error: ${error}`;
+      ws_info.textContent = `WebSocket error`;
+      ws_info.style.color = "#d3212c";
     };
     connection.onmessage = function (e) {
       console.log("Received: ", e.data);
@@ -94,8 +97,8 @@
       stick.style.transform = `translate(0px, 0px)`;
       coords.textContent = `X: 0, Y: 0`;
 
-      console.log(`#cord#X0;Y0`);
-      connection.send(`#cord#X0;Y0`);
+      console.log(`X: 0, Y: 0`);
+      if(connection.readyState === WebSocket.OPEN) connection.send(`#cord#X0;Y0`);
     });
     document.addEventListener('pointermove', (e) => {
       if (!dragging) return;
@@ -119,8 +122,8 @@
         vecchiX = normX;
         vecchiY = normY;
 
-        console.log(`X${normX};Y${normY}`);
-        connection.send(`#cord#X${normX};Y${normY}`);
+        console.log(`X: ${normX}, Y: ${normY}`);
+        if(connection.readyState === WebSocket.OPEN) connection.send(`#cord#X${normX};Y${normY}`);
       }
 
     });
