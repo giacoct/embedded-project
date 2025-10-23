@@ -16,7 +16,7 @@ unsigned long int t;
 
 const int motPinForward = 16;
 const int motPinBackwards = 17;
-const int servoPin = 18;
+const int servoPin = 19;
 
 int motSpeed = 0, servoSpeed = 0;
 int servoPos = 90;
