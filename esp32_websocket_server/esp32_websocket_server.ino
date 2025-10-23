@@ -6,20 +6,20 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <ESP32Servo.h>         // version=3.0.3
+#include <ESP32Servo.h>  // version=3.0.3
 #include "website.cpp"
 
-const char *ssid = "ALEWEB";
-const char *password = "password";
+const char *ssid = "TORRETTA_MOBILE";
+const char *password = "12345678";
 
-unsigned long int t;
+unsigned long int t, t2;
 
 const int motPinForward = 16;
 const int motPinBackwards = 17;
 const int motPinSpeed = 18;
 const int servoPin = 19;
 
-int motSpeed = 0, servoSpeed = 0;
+int motSpeed = 0, speedVecchia = 0, servoSpeed = 0;
 int servoPos = 90;
 Servo servo1;
 
@@ -78,15 +78,17 @@ void setup() {
 
   servo1.attach(servoPin);  // servo setup
 
-  // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting to WiFi..");
-  }
+  // create Wi-Fi
+  WiFi.mode(WIFI_AP);
+  IPAddress local_IP(192, 168, 4, 1);
+  IPAddress gateway(192, 168, 4, 1);
+  IPAddress subnet(255, 255, 255, 0);
+  WiFi.softAPConfig(local_IP, gateway, subnet);
+  WiFi.softAP(ssid, password);
 
-  // Print ESP Local IP Address
-  Serial.println(WiFi.localIP());
+  Serial.println("Access Point attivo!");
+  Serial.print("IP: ");
+  Serial.println(WiFi.softAPIP());
 
   // initialize websocket
   ws.onEvent(onEvent);
@@ -102,6 +104,7 @@ void setup() {
 
   // Initialize timer
   t = millis();
+  t2 = millis();
   servo1.write(servoPos);
 }
 
@@ -109,12 +112,23 @@ void loop() {
   ws.cleanupClients();  // delete disconnected clients
 
   // motor drive with h-bridge
-  if (motSpeed > 0) {
-    analogWrite(motPinForward, map(motSpeed, 0, 10, 0, 255));
-    analogWrite(motPinBackwards, 0);
-  } else {
-    analogWrite(motPinForward, 0);
-    analogWrite(motPinBackwards, map(motSpeed, 0, -10, 0, 255));
+  if (t2 + 200 < millis()) {
+    if (motSpeed > 0) {
+      digitalWrite(motPinForward, HIGH);
+      digitalWrite(motPinBackwards, LOW);
+      analogWrite(motPinSpeed, map(motSpeed, 0, 10, 125, 255));
+    } else if (motSpeed < 0) {
+      digitalWrite(motPinBackwards, HIGH);
+      digitalWrite(motPinForward, LOW);
+      analogWrite(motPinSpeed, map(motSpeed, 0, -10, 125, 255));
+    }
+    if (motSpeed * speedVecchia <= 0) {
+      t2 = millis();
+      digitalWrite(motPinBackwards, LOW);
+      digitalWrite(motPinForward, LOW);
+      digitalWrite(motPinSpeed, LOW);
+    }
+    speedVecchia = motSpeed;
   }
 
   // servo drive
@@ -128,5 +142,4 @@ void loop() {
     servo1.write(servoPos);
     t = millis();
   }
-
 }
