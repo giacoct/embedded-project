@@ -16,6 +16,7 @@ unsigned long int t;
 
 const int motPinForward = 16;
 const int motPinBackwards = 17;
+const int motPinSpeed = 18;
 const int servoPin = 19;
 
 int motSpeed = 0, servoSpeed = 0;
@@ -70,8 +71,10 @@ void setup() {
 
   pinMode(motPinForward, OUTPUT);
   pinMode(motPinBackwards, OUTPUT);
+  pinMode(motPinSpeed, OUTPUT);
   digitalWrite(motPinForward, LOW);
   digitalWrite(motPinBackwards, LOW);
+  digitalWrite(motPinSpeed, LOW);
 
   servo1.attach(servoPin);  // servo setup
 

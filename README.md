@@ -6,7 +6,7 @@ Mobile turret with two axes, controlled by mobile device.
 
 ### Bill of materials:
 - 1 _ESP32 NodeMCU_ board
-- 1 _L298N_ motor driver
+- 1 _L298N_ h-bridge motor driver
 - 1 DC Motor
 - 1 Servo motor
 - 3D prited parts: ** link coming soon **
