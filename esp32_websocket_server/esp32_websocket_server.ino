@@ -12,18 +12,19 @@
 const char *ssid = "TORRETTA_MOBILE";
 const char *password = "12345678";
 
-unsigned long int t, t2;
-
-const int motPinForward = 16;
-const int motPinBackwards = 17;
-const int motPinSpeed = 18;
-const int servoPin = 19;
-
-int motSpeed = 0, speedVecchia = 0, servoSpeed = 0;
+// timers - for millis()
+uint64_t t1, t2;
+// motor & servo pins
+const uint8_t motPinForward = 16;
+const uint8_t motPinBackwards = 17;
+const uint8_t motPinSpeed = 18;
+const uint8_t servoPin = 19;
+// motor & servo control variables
+int motSpeed = 0, motSpeedOld = 0, servoSpeed = 0;
 int servoPos = 90;
 Servo servo1;
 
-// Create AsyncWebServer object on port 80
+// AsyncWebServer object on port 80
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
@@ -32,14 +33,13 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
     data[len] = 0;
 
-    /* CODICE ESEGUITO QUANDO RICEVO UN MESSAGGIO DAL WS */
+    // code executed when a new message arrives from the ws
     String payload = String((char *)data);
-
-    if (payload.startsWith("#cord#")) {
+    if (payload.startsWith("#cord#")) {   // catch control data from the motors
       motSpeed = payload.substring(7, payload.indexOf(';')).toInt();
       servoSpeed = payload.substring(payload.indexOf(';') + 2).toInt();
       Serial.printf("Mot:%d\tServo:%d\n", motSpeed, servoSpeed);
-    } else {
+    } else { 
       Serial.println(payload);  // print data recived from websocket
     }
 
@@ -69,14 +69,17 @@ void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
 
+  // pin setup
   pinMode(motPinForward, OUTPUT);
   pinMode(motPinBackwards, OUTPUT);
   pinMode(motPinSpeed, OUTPUT);
   digitalWrite(motPinForward, LOW);
   digitalWrite(motPinBackwards, LOW);
   digitalWrite(motPinSpeed, LOW);
-
-  servo1.attach(servoPin);  // servo setup
+  
+  // servo setup
+  servo1.attach(servoPin);
+  servo1.write(servoPos);
 
   // create Wi-Fi
   WiFi.mode(WIFI_AP);
@@ -98,21 +101,18 @@ void setup() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/html", index_html);
   });
-
-  // Start server
-  server.begin();
+  server.begin();   // Start server
 
   // Initialize timer
-  t = millis();
+  t1 = millis();
   t2 = millis();
-  servo1.write(servoPos);
 }
 
 void loop() {
   ws.cleanupClients();  // delete disconnected clients
 
   // motor drive with h-bridge
-  if (t2 + 200 < millis()) {
+  if (t2 + 150 < millis()) {      // t2 + 'delay'
     if (motSpeed > 0) {
       digitalWrite(motPinForward, HIGH);
       digitalWrite(motPinBackwards, LOW);
@@ -122,24 +122,25 @@ void loop() {
       digitalWrite(motPinForward, LOW);
       analogWrite(motPinSpeed, map(motSpeed, 0, -10, 125, 255));
     }
-    if (motSpeed * speedVecchia <= 0) {
+    // when the motor changes direction it should have time to stop
+    if (motSpeed * motSpeedOld <= 0) {
       t2 = millis();
       digitalWrite(motPinBackwards, LOW);
       digitalWrite(motPinForward, LOW);
       digitalWrite(motPinSpeed, LOW);
     }
-    speedVecchia = motSpeed;
+    motSpeedOld = motSpeed;
   }
 
   // servo drive
   int interval = map(abs(servoSpeed), 0, 10, 200, 1);
-  if (t + interval < millis()) {
+  if (t1 + interval < millis()) {
     if (servoSpeed > 0) {
       servoPos = (servoPos < 180) ? servoPos + 1 : 180;
     } else if (servoSpeed < 0) {
       servoPos = (servoPos > 0) ? servoPos - 1 : 0;
     }
     servo1.write(servoPos);
-    t = millis();
+    t1 = millis();
   }
 }
