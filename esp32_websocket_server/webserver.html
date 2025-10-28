@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html>
 
 <head>
   <meta charset="UTF-8">
@@ -16,8 +16,7 @@
       justify-content: center;
       height: 100vh;
       overflow: hidden;
-      /*modifica per evitare lo scroll su telefono*/
-      touch-action: none;
+      touch-action: none;   /* avoids scroll on mobile */
     }
 
     .joystick-container {
@@ -61,11 +60,12 @@
   <div class="text" id="coords">X: 0, Y: 0</div>
 
   <script>
+    /* websocket init */
     const ws_info = document.getElementById('ws_info');
 
-    let connection = new WebSocket("ws://192.168.137.233/ws");
+    let connection = new WebSocket("ws://192.168.4.1/ws");
     connection.onopen = function () {
-      connection.send("Connect " + new Date());
+      connection.send("Connected device " + new Date());
       ws_info.textContent = `Connected!`;
       ws_info.style.color = "#069c56";
     };
@@ -77,27 +77,25 @@
     connection.onmessage = function (e) {
       console.log("Received: ", e.data);
     };
-
   </script>
   <script>
+    /* joystick logic */
     const joystick = document.getElementById('joystick');
     const stick = document.getElementById('stick');
     const coords = document.getElementById('coords');
 
-    let vecchiX = 0;
-    let vecchiY = 0;
-
-    const maxRadius = 80; /* distanza massima dal centro*/
-    const center = { x: 100, y: 100 }; /* centro del joystick*/
+    const maxRadius = 80;              /* max distance from the center */
+    const center = { x: 100, y: 100 }; /* joystick center */
     let dragging = false;
+    let oldX = 0;
+    let oldY = 0;
 
     joystick.addEventListener('pointerdown', () => dragging = true);
     document.addEventListener('pointerup', () => {
       dragging = false;
       stick.style.transform = `translate(0px, 0px)`;
       coords.textContent = `X: 0, Y: 0`;
-
-      console.log(`X: 0, Y: 0`);
+      /* send coords thru ws */
       if(connection.readyState === WebSocket.OPEN) connection.send(`#cord#X0;Y0`);
     });
     document.addEventListener('pointermove', (e) => {
@@ -118,14 +116,12 @@
       const normY = (-(limitedY / maxRadius).toFixed(1)) * 10;
 
       coords.textContent = `X: ${normX}, Y: ${normY}`;
-      if (vecchiX != normX || vecchiY != normY) {
-        vecchiX = normX;
-        vecchiY = normY;
-
-        console.log(`X: ${normX}, Y: ${normY}`);
+      if (oldX != normX || oldY != normY) {
+        oldX = normX;
+        oldY = normY;
+        
         if(connection.readyState === WebSocket.OPEN) connection.send(`#cord#X${normX};Y${normY}`);
       }
-
     });
   </script>
 </body>

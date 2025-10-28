@@ -3,6 +3,7 @@ Mobile turret with two axes, controlled by mobile device.
 
 ### Utilities [internal tools]:
 - Remove line breaks: https://www.sfu.ca/~mjordan/remove-line-breaks.htm
+- **Small gears test**: (module=4, teeth=5) (module=2.5, teeth=8) (module=2, teeth=10)
 
 ### Bill of materials:
 - 1 _ESP32 NodeMCU_ board
