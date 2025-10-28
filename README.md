@@ -14,3 +14,5 @@ Mobile turret with two axes, controlled by mobile device.
 
 ### Sources:
 - Webserver & websocket for esp32: https://lastminuteengineers.com/esp32-websocket-tutorial/
+- Esp32 PWM Basicis: https://lastminuteengineers.com/esp32-pwm-tutorial/
+- ledc docs: https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/ledc.html#
