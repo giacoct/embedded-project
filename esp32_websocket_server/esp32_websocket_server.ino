@@ -1,13 +1,14 @@
 /* Requirements
  *  => ESPAsyncWebServer: https://github.com/ESP32Async/ESPAsyncWebServer/
  *  => AsyncTCP: https://github.com/ESP32Async/AsyncTCP/
- *  => ESP32Servo [version=3.0.3]: https://github.com/madhephaestus/ESP32Servo
 */
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <ESP32Servo.h>  // version=3.0.3
 #include "website.cpp"
+
+#define PWMFreq 50    //frequenza pwm servomotore
+#define PWMResolution 10 //risoluzione segnale pwm (gradini)
 
 const char *ssid = "TORRETTA_MOBILE";
 const char *password = "12345678";
@@ -19,14 +20,18 @@ const uint8_t motPinForward = 16;
 const uint8_t motPinBackwards = 17;
 const uint8_t motPinSpeed = 18;
 const uint8_t servoPin = 19;
+const uint8_t maxDutyCycle = 126;
+const uint8_t minDutyCycle = 26;
 // motor & servo control variables
 int motSpeed = 0, motSpeedOld = 0, servoSpeed = 0;
 int servoPos = 90;
-Servo servo1;
 
 // AsyncWebServer object on port 80
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
+
+
+
 
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called on websocket's incoming message
   AwsFrameInfo *info = (AwsFrameInfo *)arg;
@@ -78,8 +83,8 @@ void setup() {
   digitalWrite(motPinSpeed, LOW);
   
   // servo setup
-  servo1.attach(servoPin);
-  servo1.write(servoPos);
+  ledcAttach(servoPin,PWMFreq,PWMResolution);
+  ledcWrite(servoPin, (maxDutyCycle+minDutyCycle)/2);
 
   // create Wi-Fi
   WiFi.mode(WIFI_AP);
@@ -140,7 +145,7 @@ void loop() {
     } else if (servoSpeed < 0) {
       servoPos = (servoPos > 0) ? servoPos - 1 : 0;
     }
-    servo1.write(servoPos);
+    ledcWrite(servoPin, map(servoPos,0,180,minDutyCycle,maxDutyCycle));
     t1 = millis();
   }
 }
