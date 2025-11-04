@@ -22,12 +22,13 @@ const uint8_t joystickPin_y = 33;
 
 
 // servo control
-const uint8_t PWMFreq = 50            // PWM frequency specific to servo motor
-const uint8_t PWMResolution = 10      // PWM resolution 2^10 values
-const uint8_t maxDutyCycle = 126;
+const uint8_t PWMFreq = 50;        // PWM frequency specific to servo motor
+const uint8_t PWMResolution = 10;  // PWM resolution 2^10 values
 const uint8_t minDutyCycle = 26;
-int servoSpeed = 0, servoPos = 90;
-// motor control 
+const uint8_t maxDutyCycle = 126;
+int servoSpeed = 0;
+float servoPos;
+// motor control
 int motSpeed = 0, motSpeedOld = 0;
 // joystick control
 int joystickOld_x = 0, joystickOld_y = 0;
@@ -40,16 +41,16 @@ AsyncWebSocket ws("/ws");
 
 
 void joystickControl() {
-  temp_x = map(analogRead(joystickPin_x), 0, 4095, -10, 10);
-  temp_y = map(analogRead(joystickPin_y), 0, 4095, -10, 10);
+  int temp_x = map(analogRead(joystickPin_x), 0, 4095, -10, 10);
+  int temp_y = map(analogRead(joystickPin_y), 0, 4095, -10, 10);
 
   // update motor speed only if joystick_x moved
-  if (temp_x != joystickOld_x){
+  if (temp_x != joystickOld_x) {
     joystickOld_x = temp_x;
     motSpeed = temp_x;
   }
   // update servo speed only if joystick_y moved
-  if (temp_y != joystickOld_y){
+  if (temp_y != joystickOld_y) {
     joystickOld_y = temp_y;
     servoSpeed = temp_y;
   }
@@ -62,11 +63,11 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
 
     // code executed when a new message arrives from the ws
     String payload = String((char *)data);
-    if (payload.startsWith("#cord#")) {   // catch control data from the motors
+    if (payload.startsWith("#cord#")) {  // catch control data from the motors
       motSpeed = payload.substring(7, payload.indexOf(';')).toInt();
       servoSpeed = payload.substring(payload.indexOf(';') + 2).toInt();
       Serial.printf("Mot:%d\tServo:%d\n", motSpeed, servoSpeed);
-    } else { 
+    } else {
       Serial.println(payload);  // print data recived from websocket
     }
 
@@ -107,10 +108,11 @@ void setup() {
   // joystick pin setup
   pinMode(joystickPin_x, INPUT);
   pinMode(joystickPin_y, INPUT);
-  
+
   // servo setup
   ledcAttach(servoPin, PWMFreq, PWMResolution);
-  ledcWrite(servoPin, (maxDutyCycle+minDutyCycle)/2);
+  servoPos = (maxDutyCycle + minDutyCycle) / 2;
+  ledcWrite(servoPin, servoPos);
 
   // create Wi-Fi
   WiFi.mode(WIFI_AP);
@@ -132,7 +134,7 @@ void setup() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/html", index_html);
   });
-  server.begin();   // Start server
+  server.begin();  // Start server
 
   // Initialize timer
   t1 = millis();
@@ -142,10 +144,10 @@ void setup() {
 void loop() {
   ws.cleanupClients();  // delete disconnected clients
 
-  joystickControl();    // control motors locally thru joystick
+  joystickControl();  // control motors locally thru joystick
 
   // motor drive with h-bridge
-  if (t2 + 150 < millis()) {      // t2 + 'delay'
+  if (t2 + 150 < millis()) {  // t2 + 'delay'
     if (motSpeed > 0) {
       digitalWrite(motPinForward, HIGH);
       digitalWrite(motPinBackwards, LOW);
@@ -166,14 +168,20 @@ void loop() {
   }
 
   // servo drive
-  int interval = map(abs(servoSpeed), 0, 10, 200, 1);
-  if (t1 + interval < millis()) {
-    if (servoSpeed > 0) {
-      servoPos = (servoPos < 180) ? servoPos + 1 : 180;
-    } else if (servoSpeed < 0) {
-      servoPos = (servoPos > 0) ? servoPos - 1 : 0;
-    }
-    ledcWrite(servoPin, map(servoPos,0,180,minDutyCycle,maxDutyCycle));
-    t1 = millis();
-  }
+  const int k_servo = 0.2;
+  servoPos = servoPos + servoSpeed*k_servo;
+  if (servoPos > maxDutyCycle) servoPos = maxDutyCycle;
+  if (servoPos < minDutyCycle) servoPos = minDutyCycle;
+  ledcWrite(servoPin, servoPos);
+
+  // int interval = map(abs(servoSpeed), 0, 10, 200, 50);
+  // if (t1 + interval < millis()) {
+  //   if (servoSpeed > 0) {
+  //     servoPos = (servoPos < 180) ? servoPos + abs(servoSpeed) : 180;
+  //   } else if (servoSpeed < 0) {
+  //     servoPos = (servoPos > 0) ? servoPos - abs(servoSpeed) : 0;
+  //   }
+  //   ledcWrite(servoPin, map(servoPos, 0, 180, minDutyCycle, maxDutyCycle));
+  //   t1 = millis();
+  // }
 }
