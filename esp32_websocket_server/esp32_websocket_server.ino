@@ -7,31 +7,53 @@
 #include <ESPAsyncWebServer.h>
 #include "website.cpp"
 
-#define PWMFreq 50    //frequenza pwm servomotore
-#define PWMResolution 10 //risoluzione segnale pwm (gradini)
-
 const char *ssid = "TORRETTA_MOBILE";
 const char *password = "12345678";
 
-// timers - for millis()
-uint64_t t1, t2;
-// motor & servo pins
+// motor pins
 const uint8_t motPinForward = 16;
 const uint8_t motPinBackwards = 17;
 const uint8_t motPinSpeed = 18;
+// servo pin
 const uint8_t servoPin = 19;
+// joystick pins
+const uint8_t joystickPin_x = 32;
+const uint8_t joystickPin_y = 33;
+
+
+// servo control
+const uint8_t PWMFreq = 50            // PWM frequency specific to servo motor
+const uint8_t PWMResolution = 10      // PWM resolution 2^10 values
 const uint8_t maxDutyCycle = 126;
 const uint8_t minDutyCycle = 26;
-// motor & servo control variables
-int motSpeed = 0, motSpeedOld = 0, servoSpeed = 0;
-int servoPos = 90;
+int servoSpeed = 0, servoPos = 90;
+// motor control 
+int motSpeed = 0, motSpeedOld = 0;
+// joystick control
+int joystickOld_x = 0, joystickOld_y = 0;
+// timers for millis()
+uint64_t t1, t2;
 
 // AsyncWebServer object on port 80
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
 
+void joystickControl() {
+  temp_x = map(analogRead(joystickPin_x), 0, 4095, -10, 10);
+  temp_y = map(analogRead(joystickPin_y), 0, 4095, -10, 10);
 
+  // update motor speed only if joystick_x moved
+  if (temp_x != joystickOld_x){
+    joystickOld_x = temp_x;
+    motSpeed = temp_x;
+  }
+  // update servo speed only if joystick_y moved
+  if (temp_y != joystickOld_y){
+    joystickOld_y = temp_y;
+    servoSpeed = temp_y;
+  }
+}
 
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called on websocket's incoming message
   AwsFrameInfo *info = (AwsFrameInfo *)arg;
@@ -74,16 +96,20 @@ void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
 
-  // pin setup
+  // motor pin setup
   pinMode(motPinForward, OUTPUT);
   pinMode(motPinBackwards, OUTPUT);
   pinMode(motPinSpeed, OUTPUT);
   digitalWrite(motPinForward, LOW);
   digitalWrite(motPinBackwards, LOW);
   digitalWrite(motPinSpeed, LOW);
+
+  // joystick pin setup
+  pinMode(joystickPin_x, INPUT);
+  pinMode(joystickPin_y, INPUT);
   
   // servo setup
-  ledcAttach(servoPin,PWMFreq,PWMResolution);
+  ledcAttach(servoPin, PWMFreq, PWMResolution);
   ledcWrite(servoPin, (maxDutyCycle+minDutyCycle)/2);
 
   // create Wi-Fi
@@ -94,7 +120,7 @@ void setup() {
   WiFi.softAPConfig(local_IP, gateway, subnet);
   WiFi.softAP(ssid, password);
 
-  Serial.println("Access Point attivo!");
+  Serial.println("Access Point active!");
   Serial.print("IP: ");
   Serial.println(WiFi.softAPIP());
 
@@ -115,6 +141,8 @@ void setup() {
 
 void loop() {
   ws.cleanupClients();  // delete disconnected clients
+
+  joystickControl();    // control motors locally thru joystick
 
   // motor drive with h-bridge
   if (t2 + 150 < millis()) {      // t2 + 'delay'
