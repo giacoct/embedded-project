@@ -40,19 +40,25 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
 
+long mapWithCenter(long x, long in_min, long in_center, long in_max, long out_min,  long out_max) {
+  const uint16_t center = (out_min + out_max) / 2;
+  if (x < in_center) return map(x, in_min, in_center, out_min, center);
+  else return map(x, in_center, in_max, center, out_max);
+}
+
 void joystickControl() {
-  int temp_x = map(analogRead(joystickPin_x), 0, 4095, -10, 10);
-  int temp_y = map(analogRead(joystickPin_y), 0, 4095, -10, 10);
+  long read_x = mapWithCenter(analogRead(joystickPin_x), 0, 1774, 4095, -10, 10);
+  long read_y = mapWithCenter(analogRead(joystickPin_y), 0, 1752, 4095, -10, 10);
 
   // update motor speed only if joystick_x moved
-  if (temp_x != joystickOld_x) {
-    joystickOld_x = temp_x;
-    motSpeed = temp_x;
+  if (read_x != joystickOld_x) {
+    joystickOld_x = read_x;
+    motSpeed = read_x;
   }
   // update servo speed only if joystick_y moved
-  if (temp_y != joystickOld_y) {
-    joystickOld_y = temp_y;
-    servoSpeed = temp_y;
+  if (read_y != joystickOld_y) {
+    joystickOld_y = read_y;
+    servoSpeed = read_y;
   }
 }
 
@@ -168,20 +174,14 @@ void loop() {
   }
 
   // servo drive
-  const int k_servo = 0.2;
-  servoPos = servoPos + servoSpeed*k_servo;
-  if (servoPos > maxDutyCycle) servoPos = maxDutyCycle;
-  if (servoPos < minDutyCycle) servoPos = minDutyCycle;
-  ledcWrite(servoPin, servoPos);
+  const float k_servo = 0.02;    // highest is faster
+  if (t1 + 5 < millis()) {
+    servoPos = servoPos + (servoSpeed * k_servo);
+    if (servoPos > maxDutyCycle) servoPos = maxDutyCycle;
+    if (servoPos < minDutyCycle) servoPos = minDutyCycle;
+    ledcWrite(servoPin, servoPos);
 
-  // int interval = map(abs(servoSpeed), 0, 10, 200, 50);
-  // if (t1 + interval < millis()) {
-  //   if (servoSpeed > 0) {
-  //     servoPos = (servoPos < 180) ? servoPos + abs(servoSpeed) : 180;
-  //   } else if (servoSpeed < 0) {
-  //     servoPos = (servoPos > 0) ? servoPos - abs(servoSpeed) : 0;
-  //   }
-  //   ledcWrite(servoPin, map(servoPos, 0, 180, minDutyCycle, maxDutyCycle));
-  //   t1 = millis();
-  // }
+    t1 = millis();
+  }
+  
 }
