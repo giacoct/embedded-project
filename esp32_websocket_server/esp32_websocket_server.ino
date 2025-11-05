@@ -10,10 +10,10 @@
 const char *ssid = "TORRETTA_MOBILE";
 const char *password = "12345678";
 
-// motor pins
+/* motor pins
 const uint8_t motPinForward = 16;
 const uint8_t motPinBackwards = 17;
-const uint8_t motPinSpeed = 18;
+const uint8_t motPinSpeed = 18;*/
 // servo pin
 const uint8_t servoPin = 19;
 // joystick pins
@@ -47,8 +47,8 @@ long mapWithCenter(long x, long in_min, long in_center, long in_max, long out_mi
 }
 
 void joystickControl() {
-  long read_x = mapWithCenter(analogRead(joystickPin_x), 0, 1774, 4095, -10, 10);
-  long read_y = mapWithCenter(analogRead(joystickPin_y), 0, 1752, 4095, -10, 10);
+  long read_x = mapWithCenter(analogRead(joystickPin_x), 0, 1760, 4095, -10, 10);         // CENTER VALUE TO TUNE FOR EACH AXIS
+  long read_y = mapWithCenter(analogRead(joystickPin_y), 0, 1760, 4095, -10, 10);
 
   // update motor speed only if joystick_x moved
   if (read_x != joystickOld_x) {
@@ -103,22 +103,23 @@ void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
 
-  // motor pin setup
+  /* motor pin setup
   pinMode(motPinForward, OUTPUT);
   pinMode(motPinBackwards, OUTPUT);
   pinMode(motPinSpeed, OUTPUT);
   digitalWrite(motPinForward, LOW);
   digitalWrite(motPinBackwards, LOW);
-  digitalWrite(motPinSpeed, LOW);
-
-  // joystick pin setup
-  pinMode(joystickPin_x, INPUT);
-  pinMode(joystickPin_y, INPUT);
+  digitalWrite(motPinSpeed, LOW);*/
 
   // servo setup
   ledcAttach(servoPin, PWMFreq, PWMResolution);
   servoPos = (maxDutyCycle + minDutyCycle) / 2;
   ledcWrite(servoPin, servoPos);
+
+  // joystick pin setup
+  pinMode(joystickPin_x, INPUT);
+  pinMode(joystickPin_y, INPUT);
+
 
   // create Wi-Fi
   WiFi.mode(WIFI_AP);
@@ -149,10 +150,12 @@ void setup() {
 
 void loop() {
   ws.cleanupClients();  // delete disconnected clients
-
   joystickControl();  // control motors locally thru joystick
 
-  // motor drive with h-bridge
+  // stepper motor drive
+
+
+  /* motor drive with h-bridge
   if (t2 + 150 < millis()) {  // t2 + 'delay'
     if (motSpeed > 0) {
       digitalWrite(motPinForward, HIGH);
@@ -171,7 +174,7 @@ void loop() {
       digitalWrite(motPinSpeed, LOW);
     }
     motSpeedOld = motSpeed;
-  }
+  }*/
 
   // servo drive
   const float k_servo = 0.02;    // highest is faster
