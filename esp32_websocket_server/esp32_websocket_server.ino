@@ -5,14 +5,11 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <Stepper.h>
 #include "website.cpp"
 
 const char *ssid = "TORRETTA_MOBILE";
 const char *password = "12345678";
 
-// stepper pins
-const uint8_t stepperPins[] = { 19, 18, 17, 16 };
 // servo pin
 const uint8_t servoPin = 21;
 // joystick pins
@@ -20,16 +17,19 @@ const uint8_t joystickPin_x = 33;
 const uint8_t joystickPin_y = 32;
 
 
-// servo control
+// base & servo control
 const uint8_t PWMFreq = 50;        // PWM frequency specific to servo motor
 const uint8_t PWMResolution = 10;  // PWM resolution 2^10 values
 const uint8_t minDutyCycle = 26;
 const uint8_t maxDutyCycle = 126;
 int servoSpeed = 0;
 float servoPos;
-// stepper control
-Stepper myStepper(2048, stepperPins[1], stepperPins[2], stepperPins[3], stepperPins[4]);    // first param = steps per revolution
-int motSpeed = 0, motSpeedOld = 0;
+// base control
+const uint8_t PWMFreq = 50;        // PWM frequency specific to servo motor
+const uint8_t PWMResolution = 10;  // PWM resolution 2^10 values
+const uint8_t minDutyCycle = 26;
+const uint8_t maxDutyCycle = 126;
+int baseSpeed = 0;
 // joystick control
 int joystickOld_x = 0, joystickOld_y = 0;
 // timers for millis()
@@ -42,8 +42,10 @@ AsyncWebSocket ws("/ws");
 
 long mapWithCenter(long x, long in_min, long in_center, long in_max, long out_min, long out_max) {
   const uint16_t center = (out_min + out_max) / 2;
-  if (x < in_center) return map(x, in_min, in_center, out_min, center);
-  else return map(x, in_center, in_max, center, out_max);
+  if (x < in_center) 
+    return map(x, in_min, in_center, out_min, center);
+  else 
+    return map(x, in_center, in_max, center, out_max);
 }
 
 void joystickControl() {
@@ -53,10 +55,10 @@ void joystickControl() {
   read_x = (abs(read_x) <= 1) ? 0 : read_x;
   read_y = (abs(read_y) <= 1) ? 0 : read_y;
 
-  // update motor speed only if joystick_x moved
+  // update base speed only if joystick_x moved
   if (read_x != joystickOld_x) {
     joystickOld_x = read_x;
-    motSpeed = read_x;
+    baseSpeed = read_x;
   }
   // update servo speed only if joystick_y moved
   if (read_y != joystickOld_y) {
@@ -72,10 +74,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
 
     // code executed when a new message arrives from the ws
     String payload = String((char *)data);
-    if (payload.startsWith("#cord#")) {  // catch control data from the motors
-      motSpeed = payload.substring(7, payload.indexOf(';')).toInt();
+    if (payload.startsWith("#cord#")) {  // catch control data for the motors
+      baseSpeed = payload.substring(7, payload.indexOf(';')).toInt();
       servoSpeed = payload.substring(payload.indexOf(';') + 2).toInt();
-      Serial.printf("Mot:%d\tServo:%d\n", motSpeed, servoSpeed);
+      Serial.printf("Mot:%d\tServo:%d\n", baseSpeed, servoSpeed);
     } else {
       Serial.println(payload);  // print data recived from websocket
     }
@@ -105,10 +107,6 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
-
-  // stepper setup
-  myStepper.setSpeed(5);
-  myStepper.step(2048);
 
   // servo setup
   ledcAttach(servoPin, PWMFreq, PWMResolution);
@@ -150,14 +148,10 @@ void loop() {
   ws.cleanupClients();  // delete disconnected clients
   joystickControl();    // control motors locally thru joystick
 
-  // // stepper motor drive
-  // if (motSpeed != 0) {
-  //   myStepper.setSpeed(motSpeed);
-  //   myStepper.step(2048 / 10);
-  // }
+  // base drive
 
   // servo drive
-  const float k_servo = 0.05;  // highest is faster
+  const float k_servo = 0.05;  // higher is faster
   if (t1 + 5 < millis()) {
     servoPos = servoPos + (servoSpeed * k_servo);
     if (servoPos > maxDutyCycle) servoPos = maxDutyCycle;
@@ -165,8 +159,5 @@ void loop() {
     ledcWrite(servoPin, servoPos);
 
     t1 = millis();
-    // Serial.print(servoSpeed);
-    // Serial.print("\t");
-    // Serial.println(servoPos);
   }
 }
