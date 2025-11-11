@@ -6,6 +6,7 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include "website.cpp"
+#include "CustomStepper.h"
 
 const char *ssid = "TORRETTA_MOBILE";
 const char *password = "12345678";
@@ -146,6 +147,12 @@ void setup() {
   // Initialize timer
   t1 = millis();
   t2 = millis();
+
+  // Initialize stepper
+  stepper.setRPM(15);
+  stepper.setSPR(4075.7728395);
+
+
 }
 
 void loop() {
@@ -186,5 +193,5 @@ void loop() {
 
     t1 = millis();
   }
-  
+
 }
