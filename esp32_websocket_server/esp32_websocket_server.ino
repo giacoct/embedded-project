@@ -5,21 +5,19 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <Stepper.h>
 #include "website.cpp"
-#include "CustomStepper.h"
 
 const char *ssid = "TORRETTA_MOBILE";
 const char *password = "12345678";
 
-/* motor pins
-const uint8_t motPinForward = 16;
-const uint8_t motPinBackwards = 17;
-const uint8_t motPinSpeed = 18;*/
+// stepper pins
+const uint8_t stepperPins[] = { 19, 18, 17, 16 };
 // servo pin
-const uint8_t servoPin = 19;
+const uint8_t servoPin = 21;
 // joystick pins
-const uint8_t joystickPin_x = 32;
-const uint8_t joystickPin_y = 33;
+const uint8_t joystickPin_x = 33;
+const uint8_t joystickPin_y = 32;
 
 
 // servo control
@@ -29,7 +27,8 @@ const uint8_t minDutyCycle = 26;
 const uint8_t maxDutyCycle = 126;
 int servoSpeed = 0;
 float servoPos;
-// motor control
+// stepper control
+Stepper myStepper(2048, stepperPins[1], stepperPins[2], stepperPins[3], stepperPins[4]);    // first param = steps per revolution
 int motSpeed = 0, motSpeedOld = 0;
 // joystick control
 int joystickOld_x = 0, joystickOld_y = 0;
@@ -41,15 +40,18 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
 
-long mapWithCenter(long x, long in_min, long in_center, long in_max, long out_min,  long out_max) {
+long mapWithCenter(long x, long in_min, long in_center, long in_max, long out_min, long out_max) {
   const uint16_t center = (out_min + out_max) / 2;
   if (x < in_center) return map(x, in_min, in_center, out_min, center);
   else return map(x, in_center, in_max, center, out_max);
 }
 
 void joystickControl() {
-  long read_x = mapWithCenter(analogRead(joystickPin_x), 0, 1760, 4095, -10, 10);         // CENTER VALUE TO TUNE FOR EACH AXIS
-  long read_y = mapWithCenter(analogRead(joystickPin_y), 0, 1760, 4095, -10, 10);
+  int16_t read_x = mapWithCenter(analogRead(joystickPin_x), 0, 1773, 4095, -10, 10);  // CENTER VALUE TO TUNE FOR EACH AXIS
+  int16_t read_y = mapWithCenter(analogRead(joystickPin_y), 0, 1751, 4095, -10, 10);
+  // dead zone
+  read_x = (abs(read_x) <= 1) ? 0 : read_x;
+  read_y = (abs(read_y) <= 1) ? 0 : read_y;
 
   // update motor speed only if joystick_x moved
   if (read_x != joystickOld_x) {
@@ -104,13 +106,9 @@ void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
 
-  /* motor pin setup
-  pinMode(motPinForward, OUTPUT);
-  pinMode(motPinBackwards, OUTPUT);
-  pinMode(motPinSpeed, OUTPUT);
-  digitalWrite(motPinForward, LOW);
-  digitalWrite(motPinBackwards, LOW);
-  digitalWrite(motPinSpeed, LOW);*/
+  // stepper setup
+  myStepper.setSpeed(5);
+  myStepper.step(2048);
 
   // servo setup
   ledcAttach(servoPin, PWMFreq, PWMResolution);
@@ -120,7 +118,6 @@ void setup() {
   // joystick pin setup
   pinMode(joystickPin_x, INPUT);
   pinMode(joystickPin_y, INPUT);
-
 
   // create Wi-Fi
   WiFi.mode(WIFI_AP);
@@ -147,44 +144,20 @@ void setup() {
   // Initialize timer
   t1 = millis();
   t2 = millis();
-
-  // Initialize stepper
-  stepper.setRPM(15);
-  stepper.setSPR(4075.7728395);
-
-
 }
 
 void loop() {
   ws.cleanupClients();  // delete disconnected clients
-  joystickControl();  // control motors locally thru joystick
+  joystickControl();    // control motors locally thru joystick
 
-  // stepper motor drive
-
-
-  /* motor drive with h-bridge
-  if (t2 + 150 < millis()) {  // t2 + 'delay'
-    if (motSpeed > 0) {
-      digitalWrite(motPinForward, HIGH);
-      digitalWrite(motPinBackwards, LOW);
-      analogWrite(motPinSpeed, map(motSpeed, 0, 10, 125, 255));
-    } else if (motSpeed < 0) {
-      digitalWrite(motPinBackwards, HIGH);
-      digitalWrite(motPinForward, LOW);
-      analogWrite(motPinSpeed, map(motSpeed, 0, -10, 125, 255));
-    }
-    // when the motor changes direction it should have time to stop
-    if (motSpeed * motSpeedOld <= 0) {
-      t2 = millis();
-      digitalWrite(motPinBackwards, LOW);
-      digitalWrite(motPinForward, LOW);
-      digitalWrite(motPinSpeed, LOW);
-    }
-    motSpeedOld = motSpeed;
-  }*/
+  // // stepper motor drive
+  // if (motSpeed != 0) {
+  //   myStepper.setSpeed(motSpeed);
+  //   myStepper.step(2048 / 10);
+  // }
 
   // servo drive
-  const float k_servo = 0.02;    // highest is faster
+  const float k_servo = 0.05;  // highest is faster
   if (t1 + 5 < millis()) {
     servoPos = servoPos + (servoSpeed * k_servo);
     if (servoPos > maxDutyCycle) servoPos = maxDutyCycle;
@@ -192,6 +165,8 @@ void loop() {
     ledcWrite(servoPin, servoPos);
 
     t1 = millis();
+    // Serial.print(servoSpeed);
+    // Serial.print("\t");
+    // Serial.println(servoPos);
   }
-
 }
