@@ -34,7 +34,6 @@ const uint8_t PWMResolution = 10;*/  // PWM resolution 2^10 values
 const uint8_t maxDutyCycle = 126;*/
 int baseSpeed = 0;
 int basePos;
-float posToGo
 
 // joystick control
 int joystickOld_x = 0, joystickOld_y = 0;
@@ -162,13 +161,11 @@ void loop() {
 
   // base drive, il tutto nella mia testa funziona ma non so se funziona davvero ~matteo
 
-  posToGo = map(baseSpeed,-10,10,0,180);  
   if (t2 + 5 < millis()) {
-    basePos = posToGo;
-    ledcWrite(basePin, basePos);
+  ledcWrite(basePin, map(baseSpeed,-10,10,26,126));
 
-    t2 = millis();
-  }
+  t2 = millis();
+}
 
   // servo drive
   const float k_servo = 0.05;  // higher is faster
