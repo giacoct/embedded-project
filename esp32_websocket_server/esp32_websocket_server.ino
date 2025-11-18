@@ -12,6 +12,8 @@ const char *password = "12345678";
 
 // servo pin
 const uint8_t servoPin = 21;
+// base pin
+const uint8_t basePin = 22; //<---------METTERE PUNG GIUSTO
 // joystick pins
 const uint8_t joystickPin_x = 33;
 const uint8_t joystickPin_y = 32;
@@ -24,12 +26,16 @@ const uint8_t minDutyCycle = 26;
 const uint8_t maxDutyCycle = 126;
 int servoSpeed = 0;
 float servoPos;
+
 // base control
-const uint8_t PWMFreq = 50;        // PWM frequency specific to servo motor
-const uint8_t PWMResolution = 10;  // PWM resolution 2^10 values
-const uint8_t minDutyCycle = 26;
-const uint8_t maxDutyCycle = 126;
+/*const uint8_t PWMFreq = 50;        // PWM frequency specific to servo motor
+const uint8_t PWMResolution = 10;*/  // PWM resolution 2^10 values
+/*const uint8_t minDutyCycle = 26;
+const uint8_t maxDutyCycle = 126;*/
 int baseSpeed = 0;
+int basePos;
+float posToGo
+
 // joystick control
 int joystickOld_x = 0, joystickOld_y = 0;
 // timers for millis()
@@ -107,11 +113,17 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
-
+  
   // servo setup
   ledcAttach(servoPin, PWMFreq, PWMResolution);
   servoPos = (maxDutyCycle + minDutyCycle) / 2;
   ledcWrite(servoPin, servoPos);
+
+  // base setup
+  ledcAttach(basePin, PWMFreq, PWMResolution);
+  basePos = 90;
+  //ledcWrite(servoPin, servoPos); //-------- not sure if needed when starting
+
 
   // joystick pin setup
   pinMode(joystickPin_x, INPUT);
@@ -148,7 +160,15 @@ void loop() {
   ws.cleanupClients();  // delete disconnected clients
   joystickControl();    // control motors locally thru joystick
 
-  // base drive
+  // base drive, il tutto nella mia testa funziona ma non so se funziona davvero ~matteo
+
+  posToGo = map(baseSpeed,-10,10,0,180);  
+  if (t2 + 5 < millis()) {
+    basePos = posToGo;
+    ledcWrite(basePin, basePos);
+
+    t2 = millis();
+  }
 
   // servo drive
   const float k_servo = 0.05;  // higher is faster
