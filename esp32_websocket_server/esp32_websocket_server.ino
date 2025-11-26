@@ -13,7 +13,7 @@ const char *password = "12345678";
 // servo pin
 const uint8_t servoPin = 21;
 // base pin
-const uint8_t basePin = 22; //<---------METTERE PUNG GIUSTO
+const uint8_t basePin = 23;  //<---------METTERE PUNG GIUSTO
 // joystick pins
 const uint8_t joystickPin_x = 33;
 const uint8_t joystickPin_y = 32;
@@ -24,19 +24,19 @@ const uint8_t PWMFreq = 50;        // PWM frequency specific to servo motor
 const uint8_t PWMResolution = 10;  // PWM resolution 2^10 values
 const uint8_t minDutyCycle = 26;
 const uint8_t maxDutyCycle = 126;
-int servoSpeed = 0;
-float servoPos;
+float servoSpeed = 0.0;
+float servoPos = 0.0;
 
 // base control
-/*const uint8_t PWMFreq = 50;        // PWM frequency specific to servo motor
-const uint8_t PWMResolution = 10;*/  // PWM resolution 2^10 values
-/*const uint8_t minDutyCycle = 26;
-const uint8_t maxDutyCycle = 126;*/
-int baseSpeed = 0;
-int basePos;
+float baseSpeed = 0.0;
+float basePos = 0.0;
+
+// Solar Tracking Logic
+bool autoMode = false; // Se true, segue il sole. Se false, usa joystick/wifi
+int threshold = 100;   // Sensibilità: differenza minima di luce per muoversi
 
 // joystick control
-int joystickOld_x = 0, joystickOld_y = 0;
+float joystickOld_x = 0.0, joystickOld_y = 0.0;
 // timers for millis()
 uint64_t t1, t2;
 
@@ -46,29 +46,29 @@ AsyncWebSocket ws("/ws");
 
 
 long mapWithCenter(long x, long in_min, long in_center, long in_max, long out_min, long out_max) {
-  const uint16_t center = (out_min + out_max) / 2;
-  if (x < in_center) 
+  const long center = (out_min + out_max) / 2;
+  if (x < in_center)
     return map(x, in_min, in_center, out_min, center);
-  else 
+  else
     return map(x, in_center, in_max, center, out_max);
 }
 
 void joystickControl() {
-  int16_t read_x = mapWithCenter(analogRead(joystickPin_x), 0, 1773, 4095, -10, 10);  // CENTER VALUE TO TUNE FOR EACH AXIS
-  int16_t read_y = mapWithCenter(analogRead(joystickPin_y), 0, 1751, 4095, -10, 10);
+  long read_x = mapWithCenter(analogRead(joystickPin_x), 0, 1773, 4095, -10, 10);  // CENTER VALUE TO TUNE FOR EACH AXIS
+  long read_y = mapWithCenter(analogRead(joystickPin_y), 0, 1751, 4095, -10, 10);
   // dead zone
   read_x = (abs(read_x) <= 1) ? 0 : read_x;
   read_y = (abs(read_y) <= 1) ? 0 : read_y;
 
   // update base speed only if joystick_x moved
   if (read_x != joystickOld_x) {
-    joystickOld_x = read_x;
-    baseSpeed = read_x;
+    joystickOld_x = float(read_x);
+    baseSpeed = float(read_x);
   }
   // update servo speed only if joystick_y moved
   if (read_y != joystickOld_y) {
-    joystickOld_y = read_y;
-    servoSpeed = read_y;
+    joystickOld_y = float(read_y);
+    servoSpeed = float(read_y);
   }
 }
 
@@ -80,9 +80,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
     // code executed when a new message arrives from the ws
     String payload = String((char *)data);
     if (payload.startsWith("#cord#")) {  // catch control data for the motors
-      baseSpeed = payload.substring(7, payload.indexOf(';')).toInt();
-      servoSpeed = payload.substring(payload.indexOf(';') + 2).toInt();
-      Serial.printf("Mot:%d\tServo:%d\n", baseSpeed, servoSpeed);
+      baseSpeed = payload.substring(7, payload.indexOf(';')).toFloat();
+      servoSpeed = payload.substring(payload.indexOf(';') + 2).toFloat();
+      Serial.printf("Mot:%f\tServo:%f\n", baseSpeed, servoSpeed);
     } else {
       Serial.println(payload);  // print data recived from websocket
     }
@@ -112,7 +112,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
-  
+
   // servo setup
   ledcAttach(servoPin, PWMFreq, PWMResolution);
   servoPos = (maxDutyCycle + minDutyCycle) / 2;
@@ -120,9 +120,6 @@ void setup() {
 
   // base setup
   ledcAttach(basePin, PWMFreq, PWMResolution);
-  basePos = 90;
-  //ledcWrite(servoPin, servoPos); //-------- not sure if needed when starting
-
 
   // joystick pin setup
   pinMode(joystickPin_x, INPUT);
@@ -157,23 +154,21 @@ void setup() {
 
 void loop() {
   ws.cleanupClients();  // delete disconnected clients
-  joystickControl();    // control motors locally thru joystick
 
-  // base drive, il tutto nella mia testa funziona ma non so se funziona davvero ~matteo
-
-  if (t2 + 5 < millis()) {
-  ledcWrite(basePin, map(baseSpeed,-10,10,26,126));
-
-  t2 = millis();
-}
-
-  // servo drive
-  const float k_servo = 0.05;  // higher is faster
+  const float k_servo = 0.20;  // higher is faster
+  // syncrounous loop
   if (t1 + 5 < millis()) {
+    joystickControl();  // control motors locally via joystick
+
+    // servo drive
     servoPos = servoPos + (servoSpeed * k_servo);
-    if (servoPos > maxDutyCycle) servoPos = maxDutyCycle;
-    if (servoPos < minDutyCycle) servoPos = minDutyCycle;
+    if (servoPos > maxDutyCycle) servoPos = float(maxDutyCycle);
+    if (servoPos < minDutyCycle) servoPos = float(minDutyCycle);
     ledcWrite(servoPin, servoPos);
+
+    // base drive
+    ledcWrite(basePin, map(baseSpeed, -10, 10, 36, 116));
+    // Serial.println(baseSpeed);
 
     t1 = millis();
   }
