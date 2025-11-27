@@ -1,0 +1,30 @@
+#ifndef __MOTORCONTROLLER_H__
+#define __MOTORCONTROLLER_H__
+
+#include <Arduino.h>
+
+class MotorController {
+private:
+  // base & servo control
+  const uint8_t pwmFreq = 50;        // PWM frequency specific to servo motor
+  const uint8_t pwmResolution = 10;  // PWM resolution 2^10 values
+  const uint8_t minDutyCycle = 26;
+  const uint8_t maxDutyCycle = 126;
+  float kServo;
+  float servoSpeed, servoPos;
+  float baseSpeed;
+  uint64_t t0;
+  // pins
+  uint8_t servoPin, basePin;
+
+public:
+  MotorController(uint8_t _servoPin, uint8_t _basePin, float _kServo);
+  void begin();
+  void stopBase();
+  void moveServo();
+  void setServoSpeed(float newSpeed);
+  void moveBase();
+  void setBaseSpeed(float newSpeed);
+};
+
+#endif
