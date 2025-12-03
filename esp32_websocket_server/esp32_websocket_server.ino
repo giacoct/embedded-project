@@ -154,8 +154,6 @@ void setup() {
     request->send_P(200, "text/html", index_html);
   });
   server.begin();  // Start server
-  
-  ws.textAll("NO_WEB");
 }
 
 void loop() {
