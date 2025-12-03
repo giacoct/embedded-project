@@ -88,7 +88,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
       //Serial.printf("Mot:%f\tServo:%f\n", baseSpeed, servoSpeed);
     } else if (payload.startsWith("#toggle#") && state == 4) {
       state = 0;
+      Serial.printf("da 4 passato allo stato 0 (controllo automatico)\n");
     } else if (payload.startsWith("#control#")) {
+      Serial.printf("passato allo stato 4 (controllo web)\n");
       state = 4;
     } else {
       Serial.println(payload);  // print data recived from websocket
@@ -152,6 +154,8 @@ void setup() {
     request->send_P(200, "text/html", index_html);
   });
   server.begin();  // Start server
+  
+  ws.textAll("NO_WEB");
 }
 
 void loop() {
@@ -184,8 +188,8 @@ void loop() {
       joystickControl();
       if (pulsantePremuto) {
         pulsantePremuto = false;
-        state = 1;
-        Serial.printf("da 3 passato allo stato 1 (controllo manuel)\n");
+        state = 0;
+        Serial.printf("da 3 passato allo stato 0 (controllo automatico)\n");
         mc.stop();
       }
       break;
@@ -193,7 +197,6 @@ void loop() {
       if (pulsantePremuto) {
         pulsantePremuto = false;
         state = 3;
-        ws.textAll("NO_WEB");
         Serial.printf("da 4 passato allo stato 3 (controllo manuel)\n");
         mc.stop();
       }
