@@ -82,11 +82,11 @@
       border-radius: 50%;
     }
 
-    input:checked + .slider {
+    input:checked+.slider {
       background-color: #0a9d48;
     }
 
-    input:checked + .slider:before {
+    input:checked+.slider:before {
       transform: translateX(26px);
     }
   </style>
@@ -109,46 +109,14 @@
 
   <script>
     const ws_info = document.getElementById('ws_info');
-    const dataSwitch = document.getElementById('dataSwitch');
-
-    let sendData = true;
-
-    // azione tasto
-    dataSwitch.addEventListener('change', () => {
-      sendData = dataSwitch.checked;
-
-      if (!sendData) {
-        ws_info.textContent = "Stato NON WEB";
-        ws_info.style.color = "#ff3333";
-        connection.send(`#toggle#0`);
-      } else {
-        // Riporta lo stato effettivo del websocket
-        if (connection.readyState === WebSocket.OPEN) {
-          ws_info.textContent = "Connected!";
-          ws_info.style.color = "#069c56";
-          connection.send(`#toggle#1`);
-        }
-        if(connection.readyState==WebSocket.CONNECTING){
-          ws_info.textContent = "Connecting...";
-          ws_info.style.color = "white";
-        }
-        if(connection.readyState==WebSocket.CLOSED){
-          ws_info.textContent = `WebSocket error`;
-          ws_info.style.color = "#d3212c";
-        }
-      }
-    });
 
     /* websocket init */
-    let connection = new WebSocket("ws://127.0.0.1:81");
+    let connection = new WebSocket("ws://192.168.4.1/ws");
 
     connection.onopen = function () {
-      if (sendData) {
-        ws_info.textContent = "Connected!";
-        ws_info.style.color = "#069c56";
-        connection.send("Connected device " + new Date());
-        connection.send(`#toggle#1`);
-      }
+      ws_info.textContent = "Connected!";
+      ws_info.style.color = "#069c56";
+      connection.send("Connected device " + new Date());
     };
 
     connection.onerror = function (error) {
@@ -156,6 +124,34 @@
       ws_info.textContent = `WebSocket error`;
       ws_info.style.color = "#d3212c";
     };
+  </script>
+
+  <script>
+    const dataSwitch = document.getElementById('dataSwitch');
+
+    /*azione tasto*/
+    dataSwitch.addEventListener('change', () => {
+
+      if (!dataSwitch.checked) {
+        ws_info.textContent = "Stato NON WEB";
+        ws_info.style.color = "#ff3333";
+        connection.send(`#toggle#`);
+      } else {
+        /* Riporta lo stato effettivo del websocket*/
+        if (connection.readyState === WebSocket.OPEN) {
+          ws_info.textContent = "Connected!";
+          ws_info.style.color = "#069c56";
+        }
+        if (connection.readyState == WebSocket.CONNECTING) {
+          ws_info.textContent = "Connecting...";
+          ws_info.style.color = "white";
+        }
+        if (connection.readyState == WebSocket.CLOSED) {
+          ws_info.textContent = `WebSocket error`;
+          ws_info.style.color = "#d3212c";
+        }
+      }
+    });
   </script>
 
   <script>
@@ -176,13 +172,13 @@
       stick.style.transform = `translate(0px, 0px)`;
       coords.textContent = `X: 0, Y: 0`;
 
-      if (sendData && connection.readyState === WebSocket.OPEN)
+      if (dataSwitch.checked && connection.readyState === WebSocket.OPEN)
         connection.send(`#cord#X0;Y0`);
     });
 
     document.addEventListener('pointermove', (e) => {
 
-      if (!sendData) return;
+      if (!dataSwitch.checked) return;
       if (!dragging) return;
 
       const rect = joystick.getBoundingClientRect();
@@ -199,15 +195,16 @@
 
       coords.textContent = `X: ${normX}, Y: ${normY}`;
 
-      if ((oldX != normX || oldY != normY) && sendData) {
+      if ((oldX != normX || oldY != normY) && dataSwitch.checked) {
         oldX = normX;
         oldY = normY;
 
-        if (sendData && connection.readyState === WebSocket.OPEN)
+        if (dataSwitch.checked && connection.readyState === WebSocket.OPEN)
           connection.send(`#cord#X${normX};Y${normY}`);
       }
     });
   </script>
 
 </body>
+
 </html>

@@ -35,14 +35,14 @@ void MotorController::stopBase() {
 // }
 
 void MotorController::moveServo() {
-  uint64_t deltaT = millis() - t0;    // media 40 ms    max 42ms
+  int deltaT = millis() - t0;    // media 40 ms    max 42ms
 
-  servoPos = servoPos + (servoSpeed * (float)deltaT * kServo);
+  servoPos = servoPos + (servoSpeed * float(deltaT) * kServo);
   if (servoPos > maxDutyCycle) servoPos = float(maxDutyCycle);
   if (servoPos < minDutyCycle) servoPos = float(minDutyCycle);
   ledcWrite(servoPin, (int)servoPos);
 
-  Serial.printf("servopos: %f", servoPos);
+  Serial.printf("tempo : %d, %f\t", t0,deltaT);
 
   t0 = millis();
 }
