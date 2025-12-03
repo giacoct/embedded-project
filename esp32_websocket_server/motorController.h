@@ -21,6 +21,8 @@ public:
   MotorController(uint8_t _servoPin, uint8_t _basePin, float _kServo);
   void begin();
   void stopBase();
+  void stopServo();
+  void stop();
   void moveServo();
   void setServoSpeed(float newSpeed);
   void moveBase();

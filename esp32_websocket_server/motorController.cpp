@@ -29,6 +29,15 @@ void MotorController::stopBase() {
   ledcWrite(basePin, (maxDutyCycle + minDutyCycle) / 2);
 }
 
+void MotorController::stopServo() {
+  servoSpeed = 0;
+}
+
+void MotorController::stop() {
+  ledcWrite(basePin, (maxDutyCycle + minDutyCycle) / 2);
+  servoSpeed = 0;
+}
+
 // // Funzione helper per mappare mantenendo precisione float prima del cast
 // long MotorController::mapFloat(float x, float in_min, float in_max, long out_min, long out_max) {
 //   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -55,7 +64,7 @@ void MotorController::moveServo() {
 
 void MotorController::moveBase() {
  ledcWrite(basePin, map(baseSpeed, -10, 10, minDutyCycle, maxDutyCycle));
- Serial.printf(" sto andando a   %d \n ",baseSpeed);
+ //Serial.printf(" sto andando a   %d \n ",baseSpeed);
 }
 
 
@@ -66,5 +75,5 @@ void MotorController::setServoSpeed(float newSpeed) {
 
 void MotorController::setBaseSpeed(int newSpeed) {
   baseSpeed = newSpeed;
-  Serial.printf("settata nuova velocità base  %d \n ",baseSpeed);
+  //Serial.printf("settata nuova velocità base  %d \n ",baseSpeed);
 }
