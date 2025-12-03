@@ -125,7 +125,7 @@
       ws_info.textContent = `WebSocket error`;
       ws_info.style.color = "#d3212c";
     };
-    */
+    
     connection.onmessage = function (event) {
       const mex = event.data;
       if(mex=="NO_WEB"){
