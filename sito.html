@@ -93,7 +93,7 @@
 </head>
 
 <body>
-  <div class="text" id="ws_info"></div>
+  <div class="text" id="ws_info">Connecting...</div>
 
   <div class="joystick-container" id="joystick">
     <div class="stick" id="stick"></div>
@@ -111,9 +111,9 @@
     const ws_info = document.getElementById('ws_info');
 
     /* websocket init */
-    // let connection = new WebSocket("ws://192.168.4.1/ws");
-    let connection = new WebSocket("ws://127.0.0.1:81");
-/*
+    let connection = new WebSocket("ws://192.168.4.1/ws");
+    /*let connection = new WebSocket("ws://127.0.0.1:81");*/
+
     connection.onopen = function () {
       ws_info.textContent = "Connected!";
       ws_info.style.color = "#069c56";
@@ -125,12 +125,10 @@
       ws_info.textContent = `WebSocket error`;
       ws_info.style.color = "#d3212c";
     };
-    */
+
     connection.onmessage = function (event) {
       const mex = event.data;
       if(mex=="NO_WEB"){
-        ws_info.textContent = "WebControl OFF";
-        ws_info.style.color = "#ff3333";
         dataSwitch.checked = false;
         dataSwitch.dispatchEvent(new Event('change'));
       }
@@ -147,13 +145,11 @@
     dataSwitch.addEventListener('change', () => {
 
       if (!dataSwitch.checked) {
-        ws_info.textContent = "WebControl OFF";
-        ws_info.style.color = "#ff3333";
         connection.send(`#toggle#`);
       } else {
         /* Riporta lo stato effettivo del websocket*/
         if (connection.readyState === WebSocket.OPEN) {
-          ws_info.textContent = "WebControl ON!";
+          ws_info.textContent = "Connected!";
           ws_info.style.color = "#069c56";
           connection.send(`#control#`);
         }
