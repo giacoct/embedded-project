@@ -25,7 +25,7 @@ float joystickOld_x = 0.0, joystickOld_y = 0.0;
 //state variable
 int state = 4;
 
-MotorController mc = MotorController(21, 23, 0.001);
+MotorController mc = MotorController(21, 23, 0.004);
 
 // AsyncWebServer object on port 80
 AsyncWebServer server(80);

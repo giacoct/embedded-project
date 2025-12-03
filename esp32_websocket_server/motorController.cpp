@@ -35,16 +35,26 @@ void MotorController::stopBase() {
 // }
 
 void MotorController::moveServo() {
-  int deltaT = millis() - t0;    // media 40 ms    max 42ms
+  uint64_t t1 = millis();
 
-  servoPos = servoPos + (servoSpeed * float(deltaT) * kServo);
+  // 2. Calcola la differenza (deltaT_ms) tra il tempo corrente e il tempo precedente (t0).
+  //    La sottrazione tra interi senza segno gestisce correttamente l'overflow.
+  uint64_t deltaT_ms = t1 - t0;
+
+  // 3. Aggiorna t0 per il ciclo successivo.
+  t0 = t1;
+
+  // 4. Converti il deltaT in float per il calcolo della posizione.
+  float deltaT = (float)deltaT_ms;
+  
+  // Il resto del codice
+  servoPos = servoPos + (servoSpeed * deltaT * kServo);
   if (servoPos > maxDutyCycle) servoPos = float(maxDutyCycle);
   if (servoPos < minDutyCycle) servoPos = float(minDutyCycle);
   ledcWrite(servoPin, (int)servoPos);
 
-  Serial.printf("tempo : %d, %f\t", t0,deltaT);
-
-  t0 = millis();
+  // Stampa
+  Serial.printf("tempo : %llu, %f\t", t0, deltaT);
 }
 
 void MotorController::moveBase() {
