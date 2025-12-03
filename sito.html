@@ -120,13 +120,13 @@
       if (!sendData) {
         ws_info.textContent = "Stato NON WEB";
         ws_info.style.color = "#ff3333";
-        connection.send(`STOP`);
+        connection.send(`#toggle#0`);
       } else {
         // Riporta lo stato effettivo del websocket
         if (connection.readyState === WebSocket.OPEN) {
           ws_info.textContent = "Connected!";
           ws_info.style.color = "#069c56";
-          connection.send(`START`);
+          connection.send(`#toggle#1`);
         }
         if(connection.readyState==WebSocket.CONNECTING){
           ws_info.textContent = "Connecting...";
@@ -147,7 +147,7 @@
         ws_info.textContent = "Connected!";
         ws_info.style.color = "#069c56";
         connection.send("Connected device " + new Date());
-        connection.send(`START`);
+        connection.send(`#toggle#1`);
       }
     };
 
