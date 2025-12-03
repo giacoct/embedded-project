@@ -2,25 +2,34 @@
 import asyncio
 import websockets
 
-uri = "ws://127.0.0.1:81"
+ip = "127.0.0.1"
+port = 81
+
+async def send_no_web(websocket):
+    await asyncio.sleep(10)
+    try:
+        await websocket.send("NO_WEB")
+        print("Inviato: NO_WEB")
+    except:
+        print("Client disconnesso prima dell'invio di NO_WEB.")
+
+async def echo(websocket):
+    # Avvio del timer per inviare "NO_WEB" dopo 10 secondi
+    asyncio.create_task(send_no_web(websocket))
+
+    async for message in websocket:
+        print(f"Received: {message}")
+        await websocket.send(f"Echo: {message}")
 
 async def main():
-    async with websockets.connect(uri) as websocket:
+    async with websockets.serve(echo, ip, port):
+        print(f"Server running on ws://{ip}:{port}")
         try:
-            while True:
-                message = input("Insert message: ")
-                await websocket.send(message)
-                response = await websocket.recv()
-                print(response)
+            await asyncio.Future()  # Run forever
+        except asyncio.CancelledError:
+            print("\nServer shutting down... ", end="")
 
-        except KeyboardInterrupt:
-            await websocket.close()
-            print("\n\nClient stopped.")
-        
 try:
     asyncio.run(main())
-
 except KeyboardInterrupt:
-    print("\nClient stopped.")
-except ConnectionRefusedError:
-    print("\nFailed to connect, server not available.")
+    print("Server stopped.")
