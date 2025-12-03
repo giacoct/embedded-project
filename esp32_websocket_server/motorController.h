@@ -12,7 +12,7 @@ private:
   const uint8_t maxDutyCycle = 126;
   float kServo;
   float servoSpeed, servoPos;
-  float baseSpeed;
+  int baseSpeed;
   uint64_t t0;
   // pins
   uint8_t servoPin, basePin;
@@ -24,7 +24,7 @@ public:
   void moveServo();
   void setServoSpeed(float newSpeed);
   void moveBase();
-  void setBaseSpeed(float newSpeed);
+  void setBaseSpeed(int newSpeed);
 };
 
 #endif

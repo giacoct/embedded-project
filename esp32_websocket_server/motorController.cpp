@@ -5,7 +5,7 @@
 MotorController::MotorController(uint8_t _servoPin, uint8_t _basePin, float _kServo) {
   servoPos = (maxDutyCycle + minDutyCycle) / 2.0;
   // base control
-  baseSpeed = 0.0;
+  baseSpeed = 0;
   servoSpeed = 0.0;
   servoPin = _servoPin;
   basePin = _basePin;
@@ -37,16 +37,12 @@ void MotorController::stopBase() {
 void MotorController::moveServo() {
   uint64_t t1 = millis();
 
-  // 2. Calcola la differenza (deltaT_ms) tra il tempo corrente e il tempo precedente (t0).
-  //    La sottrazione tra interi senza segno gestisce correttamente l'overflow.
   uint64_t deltaT_ms = t1 - t0;
 
-  // 3. Aggiorna t0 per il ciclo successivo.
   t0 = t1;
 
-  // 4. Converti il deltaT in float per il calcolo della posizione.
   float deltaT = (float)deltaT_ms;
-  
+
   // Il resto del codice
   servoPos = servoPos + (servoSpeed * deltaT * kServo);
   if (servoPos > maxDutyCycle) servoPos = float(maxDutyCycle);
@@ -54,20 +50,21 @@ void MotorController::moveServo() {
   ledcWrite(servoPin, (int)servoPos);
 
   // Stampa
-  Serial.printf("tempo : %llu, %f\t", t0, deltaT);
+  //Serial.printf("tempo : %llu, %f\t", t0, deltaT);
 }
 
 void MotorController::moveBase() {
  ledcWrite(basePin, map(baseSpeed, -10, 10, minDutyCycle, maxDutyCycle));
+ Serial.printf(" sto andando a   %d \n ",baseSpeed);
 }
 
 
 void MotorController::setServoSpeed(float newSpeed) {
   servoSpeed = newSpeed;
-  Serial.printf("settata nuova velocità servo: %f\n", servoSpeed);
+  //Serial.printf("settata nuova velocità servo: %f\n", servoSpeed);
 }
 
-void MotorController::setBaseSpeed(float newSpeed) {
+void MotorController::setBaseSpeed(int newSpeed) {
   baseSpeed = newSpeed;
-  // Serial.println("settata nuova velocità base");
+  Serial.printf("settata nuova velocità base  %d \n ",baseSpeed);
 }
