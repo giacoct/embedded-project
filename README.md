@@ -3,6 +3,7 @@ Mobile turret with two axes, controlled by mobile device.
 
 ### Utilities [internal tools]:
 - Remove line breaks: https://www.sfu.ca/~mjordan/remove-line-breaks.htm
+- Gears generator: https://www.stlgears.com/generators/3dprint
 
 ### Bill of materials:
 - 1 _ESP32 NodeMCU_ board
