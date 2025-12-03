@@ -24,7 +24,7 @@ int threshold = 100;    // Sensibilità: differenza minima di luce per muoversi
 float joystickOld_x = 0.0, joystickOld_y = 0.0;
 
 //state variable
-int state = 3;  // 0-auto,1-move to optimal,2-reset threshold,3-joystick,4-websocket
+int state = 0;  // 0-auto,1-move to optimal,2-reset threshold,3-joystick,4-websocket
 
 //roba per interrupt
 uint64_t ultimoTempoPressione = 0;
