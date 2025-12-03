@@ -93,7 +93,7 @@
 </head>
 
 <body>
-  <div class="text" id="ws_info">Connecting...</div>
+  <div class="text" style="padding: 1em" id="ws_info">Connecting...</div>
 
   <div class="joystick-container" id="joystick">
     <div class="stick" id="stick"></div>
@@ -102,10 +102,13 @@
   <div class="text" id="coords">X: 0, Y: 0</div>
 
   <!-- SWITCH SOTTO SENZA TESTO -->
-  <label class="switch">
-    <input type="checkbox" id="dataSwitch" checked>
-    <span class="slider"></span>
-  </label>
+  <div>
+    <span style="padding: 1em">Web control:</span>
+    <label class="switch">
+      <input type="checkbox" id="dataSwitch" checked>
+      <span class="slider"></span>
+    </label>
+  </div>
 
   <script>
     const ws_info = document.getElementById('ws_info');
@@ -125,14 +128,13 @@
       ws_info.textContent = `WebSocket error`;
       ws_info.style.color = "#d3212c";
     };
-    
+
     connection.onmessage = function (event) {
       const mex = event.data;
-      if(mex=="NO_WEB"){
+      if (mex == "NO_WEB") {
         dataSwitch.checked = false;
         dataSwitch.dispatchEvent(new Event('change'));
       }
-
     }
 
   </script>
