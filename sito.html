@@ -128,7 +128,7 @@
     
     connection.onmessage = function (event) {
       const mex = event.data;
-      if(mex=="NO_WEB"){
+      if(mex=="#no-web#"){
         dataSwitch.checked = false;
         dataSwitch.dispatchEvent(new Event('change'));
       }
