@@ -27,6 +27,7 @@ void MotorController::begin() {
 // Ferma immediatamente i motori
 void MotorController::stopBase() {
   ledcWrite(basePin, (maxDutyCycle + minDutyCycle) / 2);
+  baseSpeed = 0;
 }
 
 void MotorController::stopServo() {
@@ -34,8 +35,8 @@ void MotorController::stopServo() {
 }
 
 void MotorController::stop() {
-  ledcWrite(basePin, (maxDutyCycle + minDutyCycle) / 2);
-  servoSpeed = 0;
+  stopBase();
+  stopServo();
 }
 
 // // Funzione helper per mappare mantenendo precisione float prima del cast
@@ -63,8 +64,8 @@ void MotorController::moveServo() {
 }
 
 void MotorController::moveBase() {
- ledcWrite(basePin, map(baseSpeed, -10, 10, minDutyCycle, maxDutyCycle));
- //Serial.printf(" sto andando a   %d \n ",baseSpeed);
+  ledcWrite(basePin, map(baseSpeed, -10, 10, minDutyCycle, maxDutyCycle));
+  //Serial.printf(" sto andando a   %d \n ",baseSpeed);
 }
 
 
