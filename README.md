@@ -1,14 +1,17 @@
 # Embedded Software fo the IoT - project group 23
-Mobile turret with two axes, controlled by mobile device.
+Wrist joint with two axes, controlled by mobile device or automatic positioning. Demo using solar panels
 
 ### Utilities [internal tools]:
 - Remove line breaks: https://www.sfu.ca/~mjordan/remove-line-breaks.htm
 - Gears generator: https://www.stlgears.com/generators/3dprint
+  - M=1, PA=20, GL=10.
 
 ### Bill of materials:
 - 1 _ESP32 NodeMCU_ board
 - 1 Positional servo motor
 - 1 Continuous servo motor
+- 1 Slip ring (8 wires)
+- 1 Solar panel
 - 3D prited parts: ** link coming soon **
 
 ### Sources:
