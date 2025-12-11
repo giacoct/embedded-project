@@ -7,7 +7,7 @@ Wrist joint with two axes, controlled by mobile device or automatic positioning.
   - M=1, PA=20, GL=10.
 
 ### Bill of materials:
-- 1 _ESP32 NodeMCU_ board
+- 1 _ESP32 S3_ board ([docs here](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/user_guide_v1.1.html))
 - 1 Positional servo motor
 - 1 Continuous servo motor
 - 1 Slip ring (8 wires)
