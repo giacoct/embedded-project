@@ -21,4 +21,4 @@ Wrist joint with two axes, controlled by mobile device or automatic positioning.
 - ledc docs: https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/ledc.html#
 
 ### tempo per fare giro:
-circa 6 sec e 20 peni
+circa 6"20m 

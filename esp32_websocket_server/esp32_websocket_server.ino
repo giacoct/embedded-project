@@ -7,20 +7,21 @@
 #include <ESPAsyncWebServer.h>
 #include "website.cpp"
 #include "motorController.h"
+#include "lightControl.h"
 
 const char *ssid = "TORRETTA_MOBILE";
 const char *password = "12345678";
 
 // joystick pins
-const uint8_t joystickPin_x = 33;
+const uint8_t joystickPin_x = 34;
 const uint8_t joystickPin_y = 32;
 const uint8_t joystickPulsante = 25;
 
 // photoresistor pins
-const uint8_t tlPin = 13; // Top Left
-const uint8_t trPin = 12; // Top Right
-const uint8_t blPin = 14; // Bottom Left
-const uint8_t brPin = 27; // Bottom Right
+const uint8_t tlPin = 4; // Top Left
+const uint8_t trPin = 35; // Top Right
+const uint8_t blPin = 33; // Bottom Left
+const uint8_t brPin = 17; // Bottom Right
 
 // Solar Tracking Logic
 int threshold = 100;    // Sensibilità: differenza minima di luce per muoversi
@@ -38,6 +39,11 @@ const uint64_t tempoDebounce = 500;  // Semplice debounce: se è passato abbasta
 volatile bool pulsantePremuto = false;
 
 MotorController mc = MotorController(21, 23, 0.004);
+
+// LightControl tl = LightControl(tlPin);
+// LightControl tr = LightControl(trPin);
+LightControl bl = LightControl(33);
+// LightControl br = LightControl(brPin);
 
 // AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -124,41 +130,42 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 // LOGICA INSEGUITORE SOLARE
 void solarTrackerLogic() {
   // Lettura inversa: Valore Basso = Tanta luce (pull-up verso VCC, LDR tira a GND)
-  int tl = analogRead(tlPin);
-  int tr = analogRead(trPin);
-  int bl = analogRead(blPin);
-  int br = analogRead(brPin);
+  //tl.addRead();
+  // tr.addRead();
+   bl.addRead();
+  // br.addRead();
 
-  // Calcolo medie
-  int avgTop = (tl + tr) / 2;
-  int avgBot = (bl + br) / 2;
-  int avgLeft = (tl + bl) / 2;
-  int avgRight = (tr + br) / 2;
+  //Serial.printf("Luce TL: %d\tTR: %d\tBL: %d\tBR: %d\n", tl.getAvg(), tr.getAvg(), bl.getAvg(), br.getAvg());
+  // // Calcolo medie
+  // int avgTop = (tl.getAvg() + tr.getAvg()) / 2;
+  // int avgBot = (bl.getAvg() + rr.getAvg()) / 2;
+  // int avgLeft = (tl.getAvg() + bl.getAvg()) / 2;
+  // int avgRight = (tr.getAvg() + br.getAvg()) / 2;  
 
-  // --- CONTROLLO Y (TILT - Servo Standard) ---
-  // Se Top è più luminoso di Bottom (valore numerico PIÙ BASSO = più luce)
-  // avgTop < avgBot significa che c'è più luce sopra
-  if (abs(avgTop - avgBot) > threshold) {
-    if (avgTop < avgBot) {
-      mc.setServoSpeed(2); // Muovi SU (dipende dal montaggio del servo)
-    } else {
-      mc.setServoSpeed(-2); // Muovi GIU
-    }
-  } else {
-    mc.setServoSpeed(0);
-  }
+  // // --- CONTROLLO Y (TILT - Servo Standard) ---
+  // // Se Top è più luminoso di Bottom (valore numerico PIÙ BASSO = più luce)
+  // // avgTop < avgBot significa che c'è più luce sopra
+  // if (abs(avgTop - avgBot) > threshold) {
+  //   if (avgTop < avgBot) {
+  //     mc.setServoSpeed(1); // Muovi SU (dipende dal montaggio del servo)
+  //   } else {
+  //     mc.setServoSpeed(-1); // Muovi GIU
+  //   }
+  // } else {
+  //   mc.setServoSpeed(0);
+  // }
 
-  // --- CONTROLLO X (BASE - Servo Continuo) ---
-  // avgLeft < avgRight significa c'è più luce a sinistra
-  if (abs(avgLeft - avgRight) > threshold) {
-    if (avgLeft < avgRight) {
-      mc.setBaseSpeed(-3); // ruota a sinistra
-    } else {
-      mc.setBaseSpeed(3); // ruota a destra
-    }
-  } else {
-    mc.setBaseSpeed(0);
-  }
+  // // --- CONTROLLO X (BASE - Servo Continuo) ---
+  // // avgLeft < avgRight significa c'è più luce a sinistra
+  // if (abs(avgLeft - avgRight) > threshold) {
+  //   if (avgLeft < avgRight) {
+  //     mc.setBaseSpeed(-1); // ruota a sinistra
+  //   } else {
+  //     mc.setBaseSpeed(1); // ruota a destra
+  //   }
+  // } else {
+  //   mc.setBaseSpeed(0);
+  // }
 }
 
 void setup() {
@@ -166,17 +173,15 @@ void setup() {
   Serial.begin(115200);
 
   mc.begin();
+  // tl.begin();
+  // tr.begin();
+  // br.begin();
+  bl.begin();
 
   // joystick pin setup
   pinMode(joystickPin_x, INPUT);
   pinMode(joystickPin_y, INPUT);
   pinMode(joystickPulsante, INPUT_PULLUP);
-
-  // phoytoresistor pin setup
-  pinMode(tlPin, INPUT_PULLUP);
-  pinMode(trPin, INPUT_PULLUP);
-  pinMode(blPin, INPUT_PULLUP);
-  pinMode(brPin, INPUT_PULLUP);
 
   // Collega l'interrupt al pin.
   // digitalPinToInterrupt(pinPulsante): converte il pin in interrupt ID
