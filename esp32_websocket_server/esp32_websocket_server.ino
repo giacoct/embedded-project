@@ -219,7 +219,6 @@ void loop() {
         pulsantePremuto = false;
         state = 3;
         Serial.printf("da 0 passato allo stato 3 (controllo manuel)\n");
-        ws.textAll("#no-web#");
         mc.stop();
       }
       // if (millis() > t_auto + 100) {
@@ -233,7 +232,6 @@ void loop() {
         state = 3;
         Serial.printf("da 1 passato allo stato 3 (controllo manuel)\n");
         mc.stop();
-        ws.textAll("#no-web#");
       }
       break;
     case 2:  // reset threshold
@@ -246,7 +244,6 @@ void loop() {
         state = 0;
         Serial.printf("da 3 passato allo stato 0 (controllo automatico)\n");
         mc.stop();
-        ws.textAll("#no-web#");
       }
       break;
     case 4:  // controllo manuale websocket

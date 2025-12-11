@@ -8,7 +8,7 @@ port = 81
 async def send_no_web(websocket):
     await asyncio.sleep(10)
     try:
-        await websocket.send("NO_WEB")
+        await websocket.send("#no-web#")
         print("Inviato: NO_WEB")
     except:
         print("Client disconnesso prima dell'invio di NO_WEB.")
