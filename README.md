@@ -8,8 +8,6 @@ Wrist joint with two axes, controlled by mobile device or automatic positioning.
 
 ### Bill of materials:
 - 1 _ESP32 S3_ board
-  - [dev kit docs](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/user_guide_v1.1.html)
-  - [programming guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html)
 - 1 Positional servo motor
 - 1 Continuous servo motor
 - 1 Slip ring (8 wires)
@@ -18,9 +16,13 @@ Wrist joint with two axes, controlled by mobile device or automatic positioning.
 - 3D prited parts: ** link coming soon **
 
 ### Sources:
+- ESP32-S3 documentation:
+  - [ESP32-S3-DevKitC-1](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/user_guide_v1.1.html)
+  - [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html)
+  - [Arduino ESP32](https://docs.espressif.com/projects/arduino-esp32/en/latest/index.html)
 - Webserver & websocket for esp32: https://lastminuteengineers.com/esp32-websocket-tutorial/
 - Esp32 PWM Basicis: https://lastminuteengineers.com/esp32-pwm-tutorial/
 - ledc docs: https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/ledc.html#
 
-### tempo per fare giro:
-circa 6"20m 
+### Note
+- circa 6s 20cs per fare un giro intero (base)
