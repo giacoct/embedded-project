@@ -12,6 +12,7 @@ Wrist joint with two axes, controlled by mobile device or automatic positioning.
 - 1 Continuous servo motor
 - 1 Slip ring (8 wires)
 - 1 Solar panel
+- 4 photoresistors
 - 3D prited parts: ** link coming soon **
 
 ### Sources:
