@@ -16,9 +16,15 @@ const uint8_t joystickPin_x = 33;
 const uint8_t joystickPin_y = 32;
 const uint8_t joystickPulsante = 25;
 
+// photoresistor pins
+const uint8_t tlPin = 13; // Top Left
+const uint8_t trPin = 12; // Top Right
+const uint8_t blPin = 14; // Bottom Left
+const uint8_t brPin = 27; // Bottom Right
+
 // Solar Tracking Logic
-bool autoMode = false;  // Se true, segue il sole. Se false, usa joystick/wifi
 int threshold = 100;    // Sensibilità: differenza minima di luce per muoversi
+uint64_t t_auto = 0;
 
 // joystick control
 float joystickOld_x = 0.0, joystickOld_y = 0.0;
@@ -115,6 +121,45 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   }
 }
 
+// LOGICA INSEGUITORE SOLARE
+void solarTrackerLogic() {
+  // Lettura inversa: Valore Basso = Tanta luce (pull-up verso VCC, LDR tira a GND)
+  int tl = analogRead(tlPin);
+  int tr = analogRead(trPin);
+  int bl = analogRead(blPin);
+  int br = analogRead(brPin);
+
+  // Calcolo medie
+  int avgTop = (tl + tr) / 2;
+  int avgBot = (bl + br) / 2;
+  int avgLeft = (tl + bl) / 2;
+  int avgRight = (tr + br) / 2;
+
+  // --- CONTROLLO Y (TILT - Servo Standard) ---
+  // Se Top è più luminoso di Bottom (valore numerico PIÙ BASSO = più luce)
+  // avgTop < avgBot significa che c'è più luce sopra
+  if (abs(avgTop - avgBot) > threshold) {
+    if (avgTop < avgBot) {
+      mc.setServoSpeed(2); // Muovi SU (dipende dal montaggio del servo)
+    } else {
+      mc.setServoSpeed(-2); // Muovi GIU
+    }
+  } else {
+    mc.setServoSpeed(0);
+  }
+
+  // --- CONTROLLO X (BASE - Servo Continuo) ---
+  // avgLeft < avgRight significa c'è più luce a sinistra
+  if (abs(avgLeft - avgRight) > threshold) {
+    if (avgLeft < avgRight) {
+      mc.setBaseSpeed(-3); // ruota a sinistra
+    } else {
+      mc.setBaseSpeed(3); // ruota a destra
+    }
+  } else {
+    mc.setBaseSpeed(0);
+  }
+}
 
 void setup() {
   // Serial port for debugging purposes
@@ -126,6 +171,12 @@ void setup() {
   pinMode(joystickPin_x, INPUT);
   pinMode(joystickPin_y, INPUT);
   pinMode(joystickPulsante, INPUT_PULLUP);
+
+  // phoytoresistor pin setup
+  pinMode(tlPin, INPUT_PULLUP);
+  pinMode(trPin, INPUT_PULLUP);
+  pinMode(blPin, INPUT_PULLUP);
+  pinMode(brPin, INPUT_PULLUP);
 
   // Collega l'interrupt al pin.
   // digitalPinToInterrupt(pinPulsante): converte il pin in interrupt ID
@@ -171,6 +222,10 @@ void loop() {
         ws.textAll("#no-web#");
         mc.stop();
       }
+      // if (millis() > t_auto + 100) {
+        solarTrackerLogic();
+      //   t_auto = millis();
+      // }
       break;
     case 1:  // movimento verso posizione ottimale
       if (pulsantePremuto) {
