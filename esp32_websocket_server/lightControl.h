@@ -6,17 +6,20 @@
 class LightControl {
 private:
   uint8_t pin;
-  uint8_t nReads;
-  unsigned int reads[30];
-  unsigned int index;
+  uint16_t nReads;
+
+  int *reads;  // dynamic array
+  uint16_t index;
+  uint16_t baseline;
   bool fullBuffer;
 public:
   LightControl(uint8_t _pin);
-  LightControl(uint8_t _pin, uint8_t _nReads);
+  LightControl(uint8_t _pin, uint16_t _baseline);
+  LightControl(uint8_t _pin, uint16_t _baseline, uint16_t _nReads);
   ~LightControl();
   void begin();
-  void addRead();
-  int getAvg();
+  void sample();
+  unsigned int read();
 };
 
 #endif

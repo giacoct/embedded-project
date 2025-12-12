@@ -20,13 +20,13 @@ private:
 public:
   MotorController(uint8_t _servoPin, uint8_t _basePin, float _kServo);
   void begin();
-  void stopBase();
-  void stopServo();
-  void stop();
-  void moveServo();
+  void setBaseSpeed(int newSpeed);
   void setServoSpeed(float newSpeed);
   void moveBase();
-  void setBaseSpeed(int newSpeed);
+  void moveServo();
+  void stopBase();
+  void stopServo();
+  void stopAll();
 };
 
 #endif

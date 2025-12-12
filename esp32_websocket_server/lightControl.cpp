@@ -1,30 +1,36 @@
 #include <Arduino.h>
 #include "lightControl.h"
 
-LightControl::LightControl(uint8_t _pin) {
-  LightControl(_pin, 30);
+LightControl::LightControl(uint8_t _pin)
+  : LightControl(_pin, 2048, 30) {
+  // delegated constructor
 }
 
-LightControl::LightControl(uint8_t _pin, uint8_t _nReads) {
+LightControl::LightControl(uint8_t _pin, uint16_t _baseline)
+  : LightControl(_pin, _baseline, 30) {
+  // delegated constructor
+}
+
+LightControl::LightControl(uint8_t _pin, uint16_t _baseline, uint16_t _nReads) {
   pin = _pin;
+  baseline = _baseline;
   nReads = _nReads;
+
+  reads = new int[nReads];
   index = 0;
   fullBuffer = false;
-  // reads = new unsigned int[nReads];
 }
 
 LightControl::~LightControl() {
-  // delete[] reads;
+  delete[] reads;
 }
 
 void LightControl::begin() {
-  pinMode(pin, INPUT_PULLUP);
+  pinMode(pin, INPUT);
 }
 
-void LightControl::addRead() {
-  int tmp = analogRead(pin);
-  reads[index] = tmp;
-  Serial.printf("valore letto %d \n",tmp);
+void LightControl::sample() {
+  reads[index] = analogRead(pin);
   index++;
 
   if (index >= nReads) {
@@ -33,16 +39,16 @@ void LightControl::addRead() {
   }
 }
 
-int LightControl::getAvg() {
+unsigned int LightControl::read() {
   unsigned long sum = 0;
   // buffer not full
-  uint8_t count = fullBuffer ? nReads : index;
+  uint16_t count = (fullBuffer) ? nReads : index;
   // buffer empty
   if (count == 0) return 0;
-  
-  for (uint8_t i = 0; i < count; i++) {
+
+  for (uint16_t i = 0; i < count; i++) {
     sum += reads[i];
   }
-  
-  return sum / count;
+
+  return (1000 * sum) / (count * baseline);
 }
