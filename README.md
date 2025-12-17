@@ -15,6 +15,26 @@ Wrist joint with two axes, controlled by mobile device or automatic positioning.
 - 4 photoresistors
 - 3D prited parts: ** link coming soon **
 
+### Arduino IDE Setup
+- Board: "ESP32S3 Dev Module"
+- **USB CDC On Boot**: "Enabled"
+- **CPU Frequency**: "240MHz (WiFi)"
+- Core Debug Level: "None"
+- USB DFU On Boot: "Disabled"
+- Erase All Flash Before Sketch Upload: "Disabled"
+- Events Run On: "Core 1"
+- **Flash Mode**: "QIO 80MHz"
+- **Flash Size**: "16MB (128Mb)"
+- JTAG Adapter: "Disabled"
+- Arduino Runs On: "Core 1"
+- USB Firmware MSC On Boot: "Disabled"
+- **Partition Scheme**: "Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)"
+- **PSRAM**: "OPI PSRAM"
+- **Upload Mode**: "UART0 / Hardware CDC"
+- Upload Speed: "921600"
+- USB Mode: "Hardware CDC and JTAG"
+- Zigbee Mode: "Disabled"
+
 ### Sources:
 - ESP32-S3 documentation:
   - [ESP32-S3-DevKitC-1](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/user_guide_v1.1.html)
