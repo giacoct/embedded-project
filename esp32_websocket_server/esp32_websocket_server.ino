@@ -13,17 +13,17 @@ const char *ssid = "TORRETTA_MOBILE";
 const char *password = "12345678";
 
 // base and servo controller
-MotorController mc = MotorController(21, 23, 0.004);
+MotorController mc = MotorController(8, 3, 0.004);
 // photoresistors
-LightControl tl = LightControl(32, 2150);
-LightControl tr = LightControl(33, 2385);
-LightControl bl = LightControl(34, 2050);
-LightControl br = LightControl(35, 1620);
+LightControl tl = LightControl(4, 2150);
+LightControl tr = LightControl(5, 2385);
+LightControl bl = LightControl(6, 2050);
+LightControl br = LightControl(7, 1620);
 
 // joystick pins
-const uint8_t joystickPin_x = 36;
-const uint8_t joystickPin_y = 39;
-const uint8_t joystickButtonPin = 25;
+const uint8_t joystickPin_x = 9;
+const uint8_t joystickPin_y = 10;
+const uint8_t joystickButtonPin = 11;
 
 // solar Tracking Logic
 int threshold = 100;  // Sensitivity: minimum difference in light to move
@@ -34,7 +34,7 @@ float joystickOld_x = 0.0, joystickOld_y = 0.0;
 bool buttonPressed = false;
 uint64_t t0 = 0;
 // state variable
-int state = 0;  // 0-auto,1-move to optimal,2-reset threshold,3-joystick,4-websocket
+int state = 3;  // 0-auto,1-move to optimal,2-reset threshold,3-joystick,4-websocket
 
 // AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -42,7 +42,7 @@ AsyncWebSocket ws("/ws");
 
 // current production mex
 uint64_t ts;
-int solar;
+int solar=50;
 
 // function prototypes - optimization
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
@@ -218,7 +218,7 @@ void setup() {
   server.begin();  // Start webserver
 
   // time for solar production
-  ts=millis()
+  ts=millis();
 }
 
 void loop() {
