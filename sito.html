@@ -111,12 +111,15 @@
     <span class="slider">WEB CONTROL</span>
   </label>
 
+  <div class="text" id="power">Power=null</div>
+
+
   <script>
     const ws_info = document.getElementById('ws_info');
 
     /* websocket init */
     let connection = new WebSocket("ws://192.168.4.1/ws");
-    
+
     connection.onopen = function () {
       ws_info.textContent = "Connected!";
       ws_info.style.color = "#069c56";
@@ -133,6 +136,10 @@
       const mex = event.data;
       if (mex == "#no-web#") {
         dataSwitch.checked = false;
+      } else if(mex.includes("#solar=")){
+        let valore = mex.split('=')[1].replace('#', '');
+        let solarVar = parseInt(valore);
+        power.textContent="Power= "+solarVar+"V"
       }
     }
 

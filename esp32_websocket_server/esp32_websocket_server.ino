@@ -40,6 +40,10 @@ int state = 0;  // 0-auto,1-move to optimal,2-reset threshold,3-joystick,4-webso
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
+// current production mex
+uint64_t ts;
+int solar;
+
 // function prototypes - optimization
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
@@ -212,6 +216,9 @@ void setup() {
     request->send_P(200, "text/html", index_html);
   });
   server.begin();  // Start webserver
+
+  // time for solar production
+  ts=millis()
 }
 
 void loop() {
@@ -266,5 +273,10 @@ void loop() {
     default:
       state = 0;
       break;
+  }
+  // solar production
+  if (ts+1000 < millis()){
+    ws.textAll("#solar=%d#",solar);
+    ts=millis();
   }
 }
