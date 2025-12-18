@@ -5,7 +5,7 @@
 
 class MotorController {
 private:
-  // base & servo control
+  // ----- base & servo control -----
   const uint8_t pwmFreq = 50;        // PWM frequency specific to servo motor
   const uint8_t pwmResolution = 10;  // PWM resolution 2^10 values
   const uint8_t minDutyCycle = 26;
@@ -14,13 +14,16 @@ private:
   float servoSpeed, servoPos;
   int baseSpeed;
   uint64_t t0;
-  // pins
+  // ----- pins -----
   uint8_t servoPin, basePin;
-  // pid
-  double kp, ki, kd;
+  // ----- pid -----
+  // kp, ki, kd
+  double servoK[3];
+  double baseK[3];
+  // cumulative, rate, latest error
+  double baseErrors[3];
+  double servoErrors[3];
   unsigned long currentTime, previousTime;
-  double elapsedTime;
-  double cumError, rateError, lastError;
 
 public:
   MotorController(uint8_t _servoPin, uint8_t _basePin, float _kServo);
@@ -33,8 +36,8 @@ public:
   void stopServo();
   void stopAll();
   // pid
-  double computePID(double error);
-  void tunePID(double _kp, double _ki, double _kd);
+  void moveWithPID(double baseErrorInst, double servoErrorInst);
+  void tunePID(const double* _baseK, const double* _servoK);
 };
 
 #endif

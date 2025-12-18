@@ -67,26 +67,40 @@ void MotorController::stopAll() {
 
 
 // PID control
-double MotorController::computePID(double error) {
+void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
   currentTime = millis();
-  elapsedTime = (double)(currentTime - previousTime);
+  double elapsedTime = (double)(currentTime - previousTime);
 
-  cumError += error * elapsedTime;                    // integrative 
-  rateError = (error - lastError) / elapsedTime;      // derivative
+  // ---------- move base ----------
+  baseErrors[0] += baseErrorInst * elapsedTime;                   // integrative
+  baseErrors[1] = (baseErrorInst - baseErrors[2]) / elapsedTime;  // derivative
+  baseErrors[2] = baseErrorInst;
 
-  double out = kp * error + ki * cumError + kd * rateError;
+  double outBase = baseK[0] * baseErrorInst + baseK[1] * baseErrors[0] + baseK[2] * baseErrors[1];
+  outBase = constrain(outBase, 0, 255);  // prevent integral wind-up
 
-  // prevent integral wind-up
-  out = constrain(out, 0, 255);  
+  // ---------- move servo ----------
+  servoErrors[0] += servoErrorInst * elapsedTime;                    // integrative
+  servoErrors[1] = (servoErrorInst - servoErrors[2]) / elapsedTime;  // derivative
+  servoErrors[2] = servoErrorInst;
 
-  lastError = error;
+  double outServo = servoK[0] * servoErrorInst + servoK[1] * servoErrors[0] + servoK[2] * servoErrors[1];
+  outServo = constrain(outServo, 0, 255);  // prevent integral wind-up
+
+  // ---------- apply movement ----------
+  int intOutServo = (int)outServo;
+  int intOutBase = (int)outBase;
+  Serial.printf("OutServo: %d \t OutBase: %d", intOutServo, intOutBase);
+  /*ledcWrite(basePin, (int) intOutBase);
+  ledcWrite(servoPin, (int) intOutServo);
+  */
+
   previousTime = currentTime;
-
-  return out;
 }
 
-void MotorController::tunePID(double _kp, double _ki, double _kd) {
-  kp = _kp;
-  ki = _ki;
-  kd = _kd;
+void MotorController::tunePID(const double* _baseK, const double* _servoK) {
+  for (int i = 0; i < 3; i++) {
+    baseK[i] = _baseK[i];
+    servoK[i] = _servoK[i];
+  }
 }

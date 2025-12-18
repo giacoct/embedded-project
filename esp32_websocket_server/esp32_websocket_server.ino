@@ -12,8 +12,11 @@
 const char *ssid = "TORRETTA_MOBILE";
 const char *password = "12345678";
 
+const double kBasePID[] = {0.5, 0.0, 0.0};
+const double kServoPID[] = {0.5, 0.0, 0.0};
+
 // base and servo controller
-MotorController mc = MotorController(8, 3, 0.004);
+MotorController mc = MotorController(8, 3, 0.01);
 // photoresistors
 LightControl tl = LightControl(4, 2150);
 LightControl tr = LightControl(5, 2385);
@@ -62,40 +65,44 @@ void solarTrackerLogic() {
 
   Serial.printf("TL: %d \tTR: %d \tBL: %d \tBR: %d \t", tl.read(), tr.read(), bl.read(), br.read());
 
-  // averages of the sides
-  int avgTop = (tl.read() + tr.read()) / 2;
-  int avgBot = (bl.read() + br.read()) / 2;
-  int avgLeft = (tl.read() + bl.read()) / 2;
-  int avgRight = (tr.read() + br.read()) / 2;
+  // // averages of the sides
+  // int avgTop = (tl.read() + tr.read()) / 2;
+  // int avgBot = (bl.read() + br.read()) / 2;
+  // int avgLeft = (tl.read() + bl.read()) / 2;
+  // int avgRight = (tr.read() + br.read()) / 2;
 
-  // --- CONTROLLO Y (TILT - Servo Standard) ---
-  // Se Top è più luminoso di Bottom (valore numerico PIÙ BASSO = più luce)
-  // avgTop < avgBot
-  if (abs(avgTop - avgBot) > threshold) {
-    if (avgTop < avgBot) {
-      Serial.printf("move up \t");
-      // mc.setServoSpeed(1);
-    } else {
-      Serial.printf("move down \t");
-      // mc.setServoSpeed(-1);
-    }
-  } else {
-    mc.setServoSpeed(0);
-  }
+  int baseErr = (tl.read() + bl.read() - tr.read() - br.read()) / 2;
+  int servoErr = (tl.read() + tr.read() - bl.read() + br.read()) / 2;
+  mc.moveWithPID(baseErr, servoErr);
 
-  // --- CONTROLLO X (BASE - Servo Continuo) ---
-  // avgLeft < avgRight
-  if (abs(avgLeft - avgRight) > threshold) {
-    if (avgLeft < avgRight) {
-      Serial.printf("move left \t");
-      // mc.setBaseSpeed(-1);
-    } else {
-      Serial.printf("move right \t");
-      // mc.setBaseSpeed(1); // ruota a destra
-    }
-  } else {
-    mc.setBaseSpeed(0);
-  }
+  // // --- CONTROLLO Y (TILT - Servo Standard) ---
+  // // Se Top è più luminoso di Bottom (valore numerico PIÙ BASSO = più luce)
+  // // avgTop < avgBot
+  // if (abs(avgTop - avgBot) > threshold) {
+  //   if (avgTop < avgBot) {
+  //     Serial.printf("move up \t");
+  //     // mc.setServoSpeed(1);
+  //   } else {
+  //     Serial.printf("move down \t");
+  //     // mc.setServoSpeed(-1);
+  //   }
+  // } else {
+  //   mc.setServoSpeed(0);
+  // }
+
+  // // --- CONTROLLO X (BASE - Servo Continuo) ---
+  // // avgLeft < avgRight
+  // if (abs(avgLeft - avgRight) > threshold) {
+  //   if (avgLeft < avgRight) {
+  //     Serial.printf("move left \t");
+  //     // mc.setBaseSpeed(-1);
+  //   } else {
+  //     Serial.printf("move right \t");
+  //     // mc.setBaseSpeed(1); // ruota a destra
+  //   }
+  // } else {
+  //   mc.setBaseSpeed(0);
+  // }
   Serial.println();
 }
 
@@ -181,7 +188,9 @@ void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
 
+  // motor control
   mc.begin();
+  mc.tunePID(kBasePID, kServoPID);
   tl.begin();
   tr.begin();
   br.begin();
@@ -224,27 +233,25 @@ void setup() {
 void loop() {
   ws.cleanupClients();  // delete disconnected clients
 
-
-
   switch (state) {
     case 0:  // autonomous control
-      if (buttonPressed) {
-        buttonPressed = false;
-        state = 3;
-        Serial.printf("da 0 passato allo stato 3 (controllo manuel)\n");
-        mc.stopAll();
-      }
       // if (millis() > t_auto + 100) {
       solarTrackerLogic();
       //   t_auto = millis();
       // }
+      if (buttonPressed) {
+        buttonPressed = false;
+        state = 3;
+        mc.stopAll();
+        Serial.printf("da 0 passato allo stato 3 (controllo manuel)\n");
+      }
       break;
     case 1:  // movement to optimal position
       if (buttonPressed) {
         buttonPressed = false;
         state = 3;
-        Serial.printf("da 1 passato allo stato 3 (controllo manuel)\n");
         mc.stopAll();
+        Serial.printf("da 1 passato allo stato 3 (controllo manuel)\n");
       }
       break;
     case 2:  // reset threshold
@@ -257,8 +264,8 @@ void loop() {
       if (buttonPressed) {
         buttonPressed = false;
         state = 0;
-        Serial.printf("da 3 passato allo stato 0 (controllo automatico)\n");
         mc.stopAll();
+        Serial.printf("da 3 passato allo stato 0 (controllo automatico)\n");
       }
       break;
     case 4:  // manual control thru websocket
@@ -267,9 +274,9 @@ void loop() {
       if (buttonPressed) {
         buttonPressed = false;
         state = 3;
-        Serial.printf("da 4 passato allo stato 3 (controllo manuel)\n");
         ws.textAll("#no-web#");
         mc.stopAll();
+        Serial.printf("da 4 passato allo stato 3 (controllo manuel)\n");
       }
       break;
     default:
