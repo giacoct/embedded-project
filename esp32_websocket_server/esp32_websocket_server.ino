@@ -42,7 +42,7 @@ AsyncWebSocket ws("/ws");
 
 // current production mex
 uint64_t ts;
-int solar=50;
+int solar = 50;
 
 // function prototypes - optimization
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
@@ -60,7 +60,7 @@ void solarTrackerLogic() {
   bl.sample();
   br.sample();
 
-  // Serial.printf("TL: %d \tTR: %d \tBL: %d \tBR: %d \t", tl.read(), tr.read(), bl.read(), br.read());
+  Serial.printf("TL: %d \tTR: %d \tBL: %d \tBR: %d \t", tl.read(), tr.read(), bl.read(), br.read());
 
   // averages of the sides
   int avgTop = (tl.read() + tr.read()) / 2;
@@ -218,15 +218,13 @@ void setup() {
   server.begin();  // Start webserver
 
   // time for solar production
-  ts=millis();
+  ts = millis();
 }
 
 void loop() {
   ws.cleanupClients();  // delete disconnected clients
 
-  // keep the motors moving
-  mc.moveServo();
-  mc.moveBase();
+
 
   switch (state) {
     case 0:  // autonomous control
@@ -254,6 +252,8 @@ void loop() {
       break;
     case 3:  // manual control with joystick
       joystickControl();
+      mc.moveServo();
+      mc.moveBase();
       if (buttonPressed) {
         buttonPressed = false;
         state = 0;
@@ -262,6 +262,8 @@ void loop() {
       }
       break;
     case 4:  // manual control thru websocket
+      mc.moveServo();
+      mc.moveBase();
       if (buttonPressed) {
         buttonPressed = false;
         state = 3;
@@ -275,8 +277,10 @@ void loop() {
       break;
   }
   // solar production
-  if (ts+1000 < millis()){
-    ws.textAll("#solar=%d#",solar);
-    ts=millis();
+  if (ts + 1000 < millis()) {
+    String payload = "#solar=";
+    payload = payload + String(solar) + "#";
+    ws.textAll(payload);
+    ts = millis();
   }
 }

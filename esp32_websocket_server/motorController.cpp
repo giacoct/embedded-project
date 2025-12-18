@@ -45,8 +45,7 @@ void MotorController::moveServo() {
   float deltaT = (float)deltaT_ms;
 
   servoPos = servoPos + (servoSpeed * deltaT * kServo);
-  if (servoPos > maxDutyCycle) servoPos = (float)maxDutyCycle;
-  if (servoPos < minDutyCycle) servoPos = (float)minDutyCycle;
+  servoPos = constrain(servoPos, minDutyCycle, maxDutyCycle);
   ledcWrite(servoPin, (int)servoPos);
 }
 
@@ -64,4 +63,30 @@ void MotorController::stopServo() {
 void MotorController::stopAll() {
   stopBase();
   stopServo();
+}
+
+
+// PID control
+double MotorController::computePID(double error) {
+  currentTime = millis();
+  elapsedTime = (double)(currentTime - previousTime);
+
+  cumError += error * elapsedTime;                    // integrative 
+  rateError = (error - lastError) / elapsedTime;      // derivative
+
+  double out = kp * error + ki * cumError + kd * rateError;
+
+  // prevent integral wind-up
+  out = constrain(out, 0, 255);  
+
+  lastError = error;
+  previousTime = currentTime;
+
+  return out;
+}
+
+void MotorController::tunePID(double _kp, double _ki, double _kd) {
+  kp = _kp;
+  ki = _ki;
+  kd = _kd;
 }

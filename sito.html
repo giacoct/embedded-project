@@ -6,7 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Joystick 2D</title>
   <style>
-    html, body {
+    html,
+    body {
       background: #111;
       color: white;
       font-family: sans-serif;
@@ -112,8 +113,7 @@
     <span class="slider">WEB CONTROL</span>
   </label>
 
-  <div class="text" id="power">Power=null</div>
-
+  <div class="text" id="power">Power=0V</div>
 
   <script>
     const ws_info = document.getElementById('ws_info');
@@ -134,13 +134,13 @@
     };
 
     connection.onmessage = function (event) {
-      const mex = event.data;
-      if (mex == "#no-web#") {
+      const payload = event.data;
+      if (payload == "#no-web#") {
         dataSwitch.checked = false;
-      } else if(mex.includes("#solar=")){
-        let valore = mex.split('=')[1].replace('#', '');
-        let solarVar = parseInt(valore);
-        power.textContent="Power= "+solarVar+"V"
+      } else if (payload.includes("#solar=")) {
+        let pw_value = payload.substring(payload.indexOf("#") + 1);
+        pw_value = pw_value.substring(0, pw_value.indexOf("#"));
+        power.textContent = "Power= " + parseInt(pw_value.substring(6)) + "V"
       }
     }
 

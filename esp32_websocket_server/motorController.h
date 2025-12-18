@@ -16,6 +16,11 @@ private:
   uint64_t t0;
   // pins
   uint8_t servoPin, basePin;
+  // pid
+  double kp, ki, kd;
+  unsigned long currentTime, previousTime;
+  double elapsedTime;
+  double cumError, rateError, lastError;
 
 public:
   MotorController(uint8_t _servoPin, uint8_t _basePin, float _kServo);
@@ -27,6 +32,9 @@ public:
   void stopBase();
   void stopServo();
   void stopAll();
+  // pid
+  double computePID(double error);
+  void tunePID(double _kp, double _ki, double _kd);
 };
 
 #endif
