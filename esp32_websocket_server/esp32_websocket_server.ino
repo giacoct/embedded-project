@@ -18,10 +18,10 @@ const double kServoPID[] = {0.5, 0.0, 0.0};
 // base and servo controller
 MotorController mc = MotorController(8, 3, 0.01);
 // photoresistors
-LightControl tl = LightControl(4, 2150);
-LightControl tr = LightControl(5, 2385);
-LightControl bl = LightControl(6, 2050);
-LightControl br = LightControl(7, 1620);
+LightControl tl = LightControl(4, 2050);
+LightControl tr = LightControl(5, 1620);
+LightControl bl = LightControl(6, 2150);
+LightControl br = LightControl(7, 2385);
 
 // joystick pins
 const uint8_t joystickPin_x = 9;
@@ -37,7 +37,7 @@ float joystickOld_x = 0.0, joystickOld_y = 0.0;
 bool buttonPressed = false;
 uint64_t t0 = 0;
 // state variable
-int state = 3;  // 0-auto,1-move to optimal,2-reset threshold,3-joystick,4-websocket
+int state = 0;  // 0-auto,1-move to optimal,2-reset threshold,3-joystick,4-websocket
 
 // AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -71,8 +71,8 @@ void solarTrackerLogic() {
   // int avgLeft = (tl.read() + bl.read()) / 2;
   // int avgRight = (tr.read() + br.read()) / 2;
 
-  int baseErr = (tl.read() + bl.read() - tr.read() - br.read()) / 2;
-  int servoErr = (tl.read() + tr.read() - bl.read() + br.read()) / 2;
+  double baseErr = (tl.read() + bl.read() - tr.read() - br.read()) / 2.0;
+  double servoErr = (tl.read() + tr.read() - bl.read() - br.read()) / 2.0;
   mc.moveWithPID(baseErr, servoErr);
 
   // // --- CONTROLLO Y (TILT - Servo Standard) ---

@@ -19,7 +19,7 @@ public:
   ~LightControl();
   void begin();
   void sample();
-  unsigned int read();
+  int read();
 };
 
 #endif
