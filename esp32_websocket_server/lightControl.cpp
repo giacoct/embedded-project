@@ -2,12 +2,12 @@
 #include "lightControl.h"
 
 LightControl::LightControl(uint8_t _pin)
-  : LightControl(_pin, 2048, 30) {
+  : LightControl(_pin, 2048, 10) {
   // delegated constructor
 }
 
 LightControl::LightControl(uint8_t _pin, uint16_t _baseline)
-  : LightControl(_pin, _baseline, 30) {
+  : LightControl(_pin, _baseline, 10) {
   // delegated constructor
 }
 

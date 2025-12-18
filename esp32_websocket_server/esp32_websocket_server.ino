@@ -12,8 +12,8 @@
 const char *ssid = "TORRETTA_MOBILE";
 const char *password = "12345678";
 
-const double kBasePID[] = {0.5, 0.0, 0.0};
-const double kServoPID[] = {0.5, 0.0, 0.0};
+const double kBasePID[] = {0.1, 0.0, 0.0};
+const double kServoPID[] = {0.0, 0.0, 0.0};
 
 // base and servo controller
 MotorController mc = MotorController(8, 3, 0.01);

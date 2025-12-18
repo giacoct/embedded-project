@@ -11,7 +11,7 @@ MotorController::MotorController(uint8_t _servoPin, uint8_t _basePin, float _kSe
   basePin = _basePin;
   servoPin = _servoPin;
   // pid
-  currentTime = micros()
+  currentTime = 0;
   previousTime = currentTime;
 }
 
@@ -73,7 +73,7 @@ void MotorController::stopAll() {
 void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
   currentTime = micros();
   if (currentTime == previousTime) return;
-  double elapsedTime = (double)(currentTime - previousTime);
+  double elapsedTime = (currentTime - previousTime);
 
   // ---------- move base ----------
   baseErrors[0] += baseErrorInst * elapsedTime;                   // integrative
@@ -94,7 +94,7 @@ void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
   // ---------- apply movement ----------
   int intOutServo = (int)outServo;
   int intOutBase = (int)outBase;
-  Serial.printf("er0: %f \ter1: %f \ter2: %f \tOutServo: %f \tOutBase: %f \t", baseErrors[0], baseErrors[1], baseErrors[2], outServo, outBase);
+  Serial.printf("er0: %f \ter1: %f \ter2: %f \ttime: %f \tOutBase: %f \t", baseErrors[0], baseErrors[1], baseErrors[2], elapsedTime, outBase);
   /*ledcWrite(basePin, (int) intOutBase);
   ledcWrite(servoPin, (int) intOutServo);
   */
