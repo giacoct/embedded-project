@@ -9,19 +9,19 @@
 #include "motorController.h"
 #include "lightControl.h"
 
-const char *ssid = "TORRETTA_MOBILE";
-const char *password = "12345678";
+const char *ssid = "SOLAR_MOBILE";
+const char *password = "militarygrade";
 
-const double kBasePID[] = {0.1, 0.0, 0.0};
-const double kServoPID[] = {0.0, 0.0, 0.0};
+const double kBasePID[] = {0.05, 0.0000000000, 0.0};
+const double kServoPID[] = {0.05, 0.0000000000, 0.0};
 
-// base and servo controller
+// servo and base controller
 MotorController mc = MotorController(8, 3, 0.01);
 // photoresistors
-LightControl tl = LightControl(4, 2050);
-LightControl tr = LightControl(5, 1620);
-LightControl bl = LightControl(6, 2150);
-LightControl br = LightControl(7, 2385);
+LightControl tl = LightControl(6, 1788);
+LightControl tr = LightControl(5, 2369);
+LightControl bl = LightControl(4, 2880);
+LightControl br = LightControl(7, 2514);
 
 // joystick pins
 const uint8_t joystickPin_x = 9;
@@ -63,17 +63,11 @@ void solarTrackerLogic() {
   bl.sample();
   br.sample();
 
-  Serial.printf("TL: %d \tTR: %d \tBL: %d \tBR: %d \t", tl.read(), tr.read(), bl.read(), br.read());
-
-  // // averages of the sides
-  // int avgTop = (tl.read() + tr.read()) / 2;
-  // int avgBot = (bl.read() + br.read()) / 2;
-  // int avgLeft = (tl.read() + bl.read()) / 2;
-  // int avgRight = (tr.read() + br.read()) / 2;
+  Serial.printf("TL: %04d  TR: %04d  BL: %04d  BR: %04d \t", tl.read(), tr.read(), bl.read(), br.read());
 
   double baseErr = (tl.read() + bl.read() - tr.read() - br.read()) / 2.0;
   double servoErr = (tl.read() + tr.read() - bl.read() - br.read()) / 2.0;
-  mc.moveWithPID(baseErr, servoErr);
+  mc.moveWithPID(baseErr, -servoErr);
 
   // // --- CONTROLLO Y (TILT - Servo Standard) ---
   // // Se Top è più luminoso di Bottom (valore numerico PIÙ BASSO = più luce)
@@ -139,7 +133,7 @@ void joystickControl() {
   // update servo speed only if joystick_y moved
   if (read_y != joystickOld_y) {
     joystickOld_y = float(read_y);
-    mc.setServoSpeed(float(read_y));
+    mc.setServoSpeed(read_y);
   }
 }
 
@@ -151,8 +145,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
     // code executed when a new message arrives from the ws
     String payload = String((char *)data);
     if (payload.startsWith("#cord#") && state == 4) {  // catch control data for the motors
-      mc.setBaseSpeed(payload.substring(7, payload.indexOf(';')).toFloat());
-      mc.setServoSpeed(payload.substring(payload.indexOf(';') + 2).toFloat());
+      mc.setBaseSpeed(payload.substring(7, payload.indexOf(';')).toInt());
+      mc.setServoSpeed(payload.substring(payload.indexOf(';') + 2).toInt());
       //Serial.printf("Mot:%f\tServo:%f\n", baseSpeed, servoSpeed);
     } else if (payload.startsWith("#toggle#") && state == 4) {
       state = 0;
@@ -236,7 +230,13 @@ void loop() {
   switch (state) {
     case 0:  // autonomous control
       // if (millis() > t_auto + 100) {
+
+
       solarTrackerLogic();
+      mc.moveBase();
+      mc.moveServo();
+
+
       //   t_auto = millis();
       // }
       if (buttonPressed) {

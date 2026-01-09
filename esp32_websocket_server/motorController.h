@@ -6,10 +6,10 @@
 class MotorController {
 private:
   // ----- base & servo control -----
-  const uint8_t pwmFreq = 50;        // PWM frequency specific to servo motor
-  const uint8_t pwmResolution = 10;  // PWM resolution 2^10 values
-  const uint8_t minDutyCycle = 26;
-  const uint8_t maxDutyCycle = 126;
+  const uint8_t pwmFreq = 50;         // PWM frequency specific to servo motor
+  const uint8_t pwmResolution = 10;   // PWM resolution 2^10 values
+  const uint8_t minDutyCycle = 40;    // real value: minDutyCycle = 26
+  const uint8_t maxDutyCycle = 110;   // real value: maxDutyCycle = 126
   float kServo;
   float servoSpeed, servoPos;
   int baseSpeed;
@@ -29,7 +29,7 @@ public:
   MotorController(uint8_t _servoPin, uint8_t _basePin, float _kServo);
   void begin();
   void setBaseSpeed(int newSpeed);
-  void setServoSpeed(float newSpeed);
+  void setServoSpeed(int newSpeed);
   void moveBase();
   void moveServo();
   void stopBase();

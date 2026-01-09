@@ -19,7 +19,7 @@ MotorController::MotorController(uint8_t _servoPin, uint8_t _basePin, float _kSe
 void MotorController::begin() {
   // Setup PWM Servo (Y)
   ledcAttach(servoPin, pwmFreq, pwmResolution);
-  ledcWrite(servoPin, (int)servoPos);
+  ledcWrite(servoPin, 50);
 
   // Setup PWM Base (X)
   ledcAttach(basePin, pwmFreq, pwmResolution);
@@ -29,16 +29,16 @@ void MotorController::begin() {
 
 
 void MotorController::setBaseSpeed(int newSpeed) {
-  baseSpeed = newSpeed;
+  baseSpeed = constrain(newSpeed, -10, 10);
 }
 
-void MotorController::setServoSpeed(float newSpeed) {
-  servoSpeed = newSpeed;
+void MotorController::setServoSpeed(int newSpeed) {
+  servoSpeed = constrain(newSpeed, -10, 10);
 }
 
 
 void MotorController::moveBase() {
-  ledcWrite(basePin, map(baseSpeed, -10, 10, minDutyCycle, maxDutyCycle));
+  ledcWrite(basePin, map(baseSpeed, -12, 12, minDutyCycle, maxDutyCycle));  // maps to 12 instead of 10 to cap the speed of the base
 }
 
 void MotorController::moveServo() {
@@ -76,28 +76,36 @@ void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
   double elapsedTime = (currentTime - previousTime);
 
   // ---------- move base ----------
-  baseErrors[0] += baseErrorInst * elapsedTime;                   // integrative
-  baseErrors[1] = (baseErrorInst - baseErrors[2]) / elapsedTime;  // derivative
-  baseErrors[2] = baseErrorInst;
+  baseErrors[0] = baseErrorInst;                                  // proportional
+  baseErrors[1] += baseErrorInst * elapsedTime;                   // integrative
+  baseErrors[2] = (baseErrorInst - baseErrors[2]) / elapsedTime;  // derivative
 
-  double outBase = baseK[0] * baseErrorInst + baseK[1] * baseErrors[0] + baseK[2] * baseErrors[1];
-  // outBase = constrain(outBase, 0, 255);  // prevent integral wind-up
+  double outBase;
+  for (int i = 0; i < 3; i++) {
+    outBase += baseErrors[i] * baseK[i];
+  }
+  // outBase = constrain(outBase, minDutyCycle+10, maxDutyCycle-10);
+  setBaseSpeed(outBase);
 
   // ---------- move servo ----------
-  servoErrors[0] += servoErrorInst * elapsedTime;                    // integrative
-  servoErrors[1] = (servoErrorInst - servoErrors[2]) / elapsedTime;  // derivative
-  servoErrors[2] = servoErrorInst;
+  servoErrors[0] = servoErrorInst;
+  servoErrors[1] += servoErrorInst * elapsedTime;                    // integrative
+  servoErrors[2] = (servoErrorInst - servoErrors[2]) / elapsedTime;  // derivative
 
-  double outServo = servoK[0] * servoErrorInst + servoK[1] * servoErrors[0] + servoK[2] * servoErrors[1];
+  double outServo;
+  for (int i = 0; i < 3; i++) {
+    outServo += servoErrors[i] * servoK[i];
+  }
   // outServo = constrain(outServo, 0, 255);  // prevent integral wind-up
+  setServoSpeed(outServo);
 
   // ---------- apply movement ----------
   int intOutServo = (int)outServo;
   int intOutBase = (int)outBase;
-  Serial.printf("er0: %f \ter1: %f \ter2: %f \ttime: %f \tOutBase: %f \t", baseErrors[0], baseErrors[1], baseErrors[2], elapsedTime, outBase);
-  /*ledcWrite(basePin, (int) intOutBase);
-  ledcWrite(servoPin, (int) intOutServo);
-  */
+  Serial.printf(" er0: %f \ter1: %f \ter2: %f \ttime: %f \tOutBase: %f", servoErrors[0], servoErrors[1], servoErrors[2], elapsedTime, outServo);
+  // ledcWrite(basePin, (int) intOutBase);
+  // ledcWrite(servoPin, (int) intOutServo);
+
 
   previousTime = currentTime;
 }
