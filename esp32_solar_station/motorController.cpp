@@ -73,7 +73,7 @@ void MotorController::stopAll() {
 void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
   currentTime = micros();
   if (currentTime == previousTime) return;
-  double elapsedTime = (currentTime - previousTime);
+  double elapsedTime = (currentTime - previousTime) / 1000.0;  // elapsed time in milliseconds
 
   // ---------- move base ----------
   baseErrors[0] = baseErrorInst;                                  // proportional
@@ -84,11 +84,12 @@ void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
   for (int i = 0; i < 3; i++) {
     outBase += baseErrors[i] * baseK[i];
   }
-  // outBase = constrain(outBase, minDutyCycle+10, maxDutyCycle-10);
-  setBaseSpeed(outBase);
+  outBase += (minDutyCycle + maxDutyCycle) / 2;              // shift the PID center from 0 to the midpoint between minDutyCycle and maxDutyCycle
+  outBase = constrain(outBase, minDutyCycle, maxDutyCycle);  // prevents integral wind-up
+  // setBaseSpeed(outBase);
 
   // ---------- move servo ----------
-  servoErrors[0] = servoErrorInst;
+  servoErrors[0] = servoErrorInst;                                   // proportional
   servoErrors[1] += servoErrorInst * elapsedTime;                    // integrative
   servoErrors[2] = (servoErrorInst - servoErrors[2]) / elapsedTime;  // derivative
 
@@ -96,15 +97,16 @@ void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
   for (int i = 0; i < 3; i++) {
     outServo += servoErrors[i] * servoK[i];
   }
-  // outServo = constrain(outServo, 0, 255);  // prevent integral wind-up
-  setServoSpeed(outServo);
+  outServo += (minDutyCycle + maxDutyCycle) / 2;               // shift the PID center from 0 to the midpoint between minDutyCycle and maxDutyCycle
+  outServo = constrain(outServo, minDutyCycle, maxDutyCycle);  // prevents integral wind-up
+  // setServoSpeed(outServo);
 
   // ---------- apply movement ----------
   int intOutServo = (int)outServo;
   int intOutBase = (int)outBase;
-  Serial.printf(" er0: %f \ter1: %f \ter2: %f \ttime: %f \tOutBase: %f", servoErrors[0], servoErrors[1], servoErrors[2], elapsedTime, outServo);
-  // ledcWrite(basePin, (int) intOutBase);
-  // ledcWrite(servoPin, (int) intOutServo);
+  Serial.printf(" P: %f \tI: %f \tD: %f \ttime: %f \tOutServo: %f", servoErrors[0], servoErrors[1], servoErrors[2], elapsedTime, outServo);
+  ledcWrite(basePin, (int) intOutBase);
+  ledcWrite(servoPin, (int) intOutServo);
 
 
   previousTime = currentTime;

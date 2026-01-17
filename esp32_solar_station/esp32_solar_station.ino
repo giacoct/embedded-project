@@ -233,8 +233,8 @@ void loop() {
 
 
       solarTrackerLogic();
-      mc.moveBase();
-      mc.moveServo();
+      // mc.moveBase();
+      // mc.moveServo();
 
 
       //   t_auto = millis();
