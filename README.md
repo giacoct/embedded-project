@@ -1,6 +1,11 @@
 # Embedded Software fo the IoT - project group 23
 Wrist joint with two axes, controlled by mobile device or automatic positioning. Demo using solar panels
 
+# Project Managers
+Matteo Zambon
+Alessandro Weber
+Giacomo Castellan
+
 ### Utilities [internal tools]:
 - Remove line breaks: https://www.sfu.ca/~mjordan/remove-line-breaks.htm
 - Gears generator: https://www.stlgears.com/generators/3dprint
@@ -13,7 +18,7 @@ Wrist joint with two axes, controlled by mobile device or automatic positioning.
 - 1 Slip ring (8 wires)
 - 1 Solar panel
 - 4 photoresistors
-- 3D prited parts: ** link coming soon **
+- 3D prited parts: ** link coming soon **2
 
 ### code organization
 - 3D files contains the files to print and assemble 

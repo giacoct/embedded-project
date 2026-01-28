@@ -12,8 +12,8 @@
 const char *ssid = "SOLAR_MOBILE";
 const char *password = "militarygrade";
 
-const double kBasePID[] = {0.05, 0.0000000000, 0.0};
-const double kServoPID[] = {0.05, 0.0000000000, 0.0};
+double kBasePID[] = {0.05, 0.0, 0.0};
+double kServoPID[] = {0.05, 0.0, 0.0};
 
 // servo and base controller
 MotorController mc = MotorController(8, 3, 0.01);
@@ -145,20 +145,16 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
     // code executed when a new message arrives from the ws
     String payload = String((char *)data);
     if (payload.startsWith("B#")) {  // PID base calibration
-      String temp = "";
-      temp += payload.substring(payload.indexOf('#kp='), payload.indexOf('#ki='));
-      temp += "$";
-      temp += payload.substring(payload.indexOf('#ki='), payload.indexOf('#kd='));
-      temp += "$";
-      temp += payload.substring(payload.indexOf('#kd='), payload.indexOf('##'));
-      Serial.printf(temp);
-
-      // mc.tunePID(kBasePID, kServoPID);
+      kBasePID[0] = payload.substring(payload.indexOf("#kp=")+4, payload.indexOf("#ki=")).toFloat();
+      kBasePID[1] = payload.substring(payload.indexOf("#ki=")+4, payload.indexOf("#kd=")).toFloat();
+      kBasePID[2] = payload.substring(payload.indexOf("#kd=")+4, payload.indexOf("##")).toFloat();
+      mc.tunePID(kBasePID, kServoPID);
     }
     else if (payload.startsWith("S#")) {  // PID servo calibration
-
-
-      // mc.tunePID(kBasePID, kServoPID);
+      kServoPID[0] = payload.substring(payload.indexOf("#kp=")+4, payload.indexOf("#ki=")).toFloat();
+      kServoPID[1] = payload.substring(payload.indexOf("#ki=")+4, payload.indexOf("#kd=")).toFloat();
+      kServoPID[2] = payload.substring(payload.indexOf("#kd=")+4, payload.indexOf("##")).toFloat();
+      mc.tunePID(kBasePID, kServoPID);
     }
     else if (payload.startsWith("#cord#") && state == 4) {  // catch control data for the motors
       mc.setBaseSpeed(payload.substring(7, payload.indexOf(';')).toInt());
