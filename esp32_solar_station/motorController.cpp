@@ -71,16 +71,17 @@ void MotorController::stopAll() {
 
 // PID control
 void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
+
   currentTime = micros();
   if (currentTime == previousTime) return;
   double elapsedTime = (currentTime - previousTime) / 1000.0;  // elapsed time in milliseconds
 
   // ---------- move base ----------
   baseErrors[2] = (baseErrorInst - baseErrors[0]) / elapsedTime;  // derivative
-  baseErrors[1] += baseErrorInst * elapsedTime;                   // integrative
+  baseErrors[1] += baseErrorInst * elapsedTime;                    // integrative
   baseErrors[0] = baseErrorInst;                                  // proportional
 
-  double outBase;
+  double outBase = 0.0;
   for (int i = 0; i < 3; i++) {
     outBase += baseErrors[i] * baseK[i];
   }
@@ -90,12 +91,16 @@ void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
 
   // ---------- move servo ----------
   servoErrors[2] = (servoErrorInst - servoErrors[0]) / elapsedTime;  // derivative
-  servoErrors[1] += servoErrorInst * elapsedTime;                    // integrative
+  servoErrors[1] += servoErrorInst * elapsedTime;                  // integrative
   servoErrors[0] = servoErrorInst;                                   // proportional
 
-  double outServo;
+  double outServo = 0.0;
   for (int i = 0; i < 3; i++) {
     outServo += servoErrors[i] * servoK[i];
+  }
+
+  if (outServo > maxDutyCycle || outServo < minDutyCycle) {
+    servoErrors[1] -= servoErrorInst * elapsedTime;                  // integrative
   }
   outServo += (minDutyCycle + maxDutyCycle) / 2;               // shift the PID center from 0 to the midpoint between minDutyCycle and maxDutyCycle
   outServo = constrain(outServo, minDutyCycle, maxDutyCycle);  // prevents integral wind-up

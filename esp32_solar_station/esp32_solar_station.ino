@@ -12,15 +12,20 @@
 const char *ssid = "SOLAR_MOBILE";
 const char *password = "militarygrade";
 
-double kBasePID[] = {0.05, 0.0, 0.0};
-double kServoPID[] = {0.05, 0.0, 0.0};
+double kBasePID[] = {0.05, 0.00001, 0};
+double kServoPID[] = {0.04, 0.00001, 0};
 
 // servo and base controller
 MotorController mc = MotorController(8, 3, 0.01);
 // photoresistors
-LightControl tl = LightControl(6, 1788);
+/*LightControl tl = LightControl(6, 1788);
 LightControl tr = LightControl(5, 2369);
 LightControl bl = LightControl(4, 2880);
+LightControl br = LightControl(7, 2514);*/
+
+LightControl tl = LightControl(6, 1788);
+LightControl tr = LightControl(5, 2400);
+LightControl bl = LightControl(4, 2800);
 LightControl br = LightControl(7, 2514);
 
 // joystick pins
@@ -43,9 +48,7 @@ int state = 0;  // 0-auto,1-move to optimal,2-reset threshold,3-joystick,4-webso
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
-// current production mex
-uint64_t ts;
-int solar = 50;
+
 
 // function prototypes - optimization
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
@@ -67,6 +70,14 @@ void solarTrackerLogic() {
 
   double baseErr = (tl.read() + bl.read() - tr.read() - br.read()) / 2.0;
   double servoErr = (tl.read() + tr.read() - bl.read() - br.read()) / 2.0;
+
+  // double left  = tl.read() + bl.read();
+  // double right = tr.read() + br.read();
+  // double top   = tl.read() + tr.read();
+  // double bottom= bl.read() + br.read();
+
+  // double baseErr  = (left - right) / (left + right);
+  // double servoErr = (top - bottom) / (top + bottom);
   mc.moveWithPID(baseErr, -servoErr);
 
   // // --- CONTROLLO Y (TILT - Servo Standard) ---
@@ -156,16 +167,16 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
       kServoPID[2] = payload.substring(payload.indexOf("#kd=")+4, payload.indexOf("##")).toFloat();
       mc.tunePID(kBasePID, kServoPID);
     }
-    else if (payload.startsWith("#cord#") && state == 4) {  // catch control data for the motors
+    else if (payload.startsWith("#cord#") && state == 2) {  // catch control data for the motors
       mc.setBaseSpeed(payload.substring(7, payload.indexOf(';')).toInt());
       mc.setServoSpeed(payload.substring(payload.indexOf(';') + 2).toInt());
       //Serial.printf("Mot:%f\tServo:%f\n", baseSpeed, servoSpeed);
-    } else if (payload.startsWith("#toggle#") && state == 4) {
+    } else if (payload.startsWith("#toggle#") && state == 2) {
       state = 0;
       Serial.printf("da 4 passato allo stato 0 (controllo automatico)\n");
     } else if (payload.startsWith("#control#")) {
-      Serial.printf("passato allo stato 4 (controllo web)\n");
-      state = 4;
+      Serial.printf("passato allo stato 2 (controllo web)\n");
+      state = 2;
     } else {
       Serial.println(payload);  // print data recived from websocket
     }
@@ -232,8 +243,7 @@ void setup() {
   });
   server.begin();  // Start webserver
 
-  // time for solar production
-  ts = millis();
+  
 }
 
 void loop() {
@@ -241,35 +251,15 @@ void loop() {
 
   switch (state) {
     case 0:  // autonomous control
-      // if (millis() > t_auto + 100) {
-
-
       solarTrackerLogic();
-      // mc.moveBase();
-      // mc.moveServo();
-
-
-      //   t_auto = millis();
-      // }
       if (buttonPressed) {
         buttonPressed = false;
-        state = 3;
+        state = 1;
         mc.stopAll();
         Serial.printf("da 0 passato allo stato 3 (controllo manuel)\n");
       }
       break;
-    case 1:  // movement to optimal position
-      if (buttonPressed) {
-        buttonPressed = false;
-        state = 3;
-        mc.stopAll();
-        Serial.printf("da 1 passato allo stato 3 (controllo manuel)\n");
-      }
-      break;
-    case 2:  // reset threshold
-
-      break;
-    case 3:  // manual control with joystick
+    case 1:  // manual control with joystick
       joystickControl();
       mc.moveServo();
       mc.moveBase();
@@ -280,12 +270,12 @@ void loop() {
         Serial.printf("da 3 passato allo stato 0 (controllo automatico)\n");
       }
       break;
-    case 4:  // manual control thru websocket
+    case 2:  // manual control thru websocket
       mc.moveServo();
       mc.moveBase();
       if (buttonPressed) {
         buttonPressed = false;
-        state = 3;
+        state = 1;
         ws.textAll("#no-web#");
         mc.stopAll();
         Serial.printf("da 4 passato allo stato 3 (controllo manuel)\n");
@@ -296,10 +286,5 @@ void loop() {
       break;
   }
   // solar production
-  if (ts + 1000 < millis()) {
-    String payload = "#solar=";
-    payload = payload + String(solar) + "#";
-    ws.textAll(payload);
-    ts = millis();
-  }
+  
 }
