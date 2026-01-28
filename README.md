@@ -20,8 +20,10 @@ Giacomo Castellan
 - 4 photoresistors
 - 3D prited parts: ** link coming soon **2
 
-### code organization
-- 3D files contains the files to print and assemble 
+### instructions
+- you just have to print your 3D model from the link and assemble them as seen in the presentation
+- connect the cables as seen in the electrical scheme
+- upload the libraries and the main code with your arduino ide having the following parameters:
 
 ### Arduino IDE Setup
 - Board: "ESP32S3 Dev Module"
@@ -68,5 +70,3 @@ Giacomo Castellan
   - html development
   - presentation
   - electrical scheme
-
-
