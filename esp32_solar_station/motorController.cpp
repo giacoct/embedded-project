@@ -76,9 +76,9 @@ void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
   double elapsedTime = (currentTime - previousTime) / 1000.0;  // elapsed time in milliseconds
 
   // ---------- move base ----------
-  baseErrors[0] = baseErrorInst;                                  // proportional
+  baseErrors[2] = (baseErrorInst - baseErrors[0]) / elapsedTime;  // derivative
   baseErrors[1] += baseErrorInst * elapsedTime;                   // integrative
-  baseErrors[2] = (baseErrorInst - baseErrors[2]) / elapsedTime;  // derivative
+  baseErrors[0] = baseErrorInst;                                  // proportional
 
   double outBase;
   for (int i = 0; i < 3; i++) {
@@ -89,9 +89,9 @@ void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
   // setBaseSpeed(outBase);
 
   // ---------- move servo ----------
-  servoErrors[0] = servoErrorInst;                                   // proportional
+  servoErrors[2] = (servoErrorInst - servoErrors[0]) / elapsedTime;  // derivative
   servoErrors[1] += servoErrorInst * elapsedTime;                    // integrative
-  servoErrors[2] = (servoErrorInst - servoErrors[2]) / elapsedTime;  // derivative
+  servoErrors[0] = servoErrorInst;                                   // proportional
 
   double outServo;
   for (int i = 0; i < 3; i++) {
