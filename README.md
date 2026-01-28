@@ -23,6 +23,7 @@ Giacomo Castellan
 ### instructions
 - you just have to print your 3D model from the link and assemble them as seen in the presentation
 - connect the cables as seen in the electrical scheme
+![alt text](image.png)
 - upload the libraries and the main code with your arduino ide having the following parameters:
 
 ### Arduino IDE Setup
@@ -45,14 +46,22 @@ Giacomo Castellan
 - USB Mode: "Hardware CDC and JTAG"
 - Zigbee Mode: "Disabled"
 
-### Sources:
-- ESP32-S3 documentation:
-  - [ESP32-S3-DevKitC-1](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/user_guide_v1.1.html)
-  - [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html)
-  - [Arduino ESP32](https://docs.espressif.com/projects/arduino-esp32/en/latest/index.html)
-- Webserver & websocket for esp32: https://lastminuteengineers.com/esp32-websocket-tutorial/
-- Esp32 PWM Basicis: https://lastminuteengineers.com/esp32-pwm-tutorial/
-- ledc docs: https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/ledc.html#
+### Code description
+we have our main that works as a finite state machine that is linked to a manual,automatic and web control.
+You can access to the web mode sia the wifi "SOLAR_MOBILE" created by the esp(you need to install the specific library) and then access to the web page on adress 192.168.4.1 with the wifi password on the code.
+Here you can see that you can switch between modalities with the various buttons and switches.
+The porpouse of the automatic mode is to get the better illumination on our panel.
+You can customize the various parameters to modify how fast the turret moves.
+
+### Requirments
+The libraries you need to have are:
+-WiFi.h
+-AsyncTCP.h
+-ESPAsyncWebServer.h
+-"website.cpp"
+-"motorController.h"
+-"lightControl.h"
+
 
 ### Who did what
 - giacomo
@@ -70,3 +79,13 @@ Giacomo Castellan
   - html development
   - presentation
   - electrical scheme
+
+
+### Sources:
+- ESP32-S3 documentation:
+  - [ESP32-S3-DevKitC-1](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/user_guide_v1.1.html)
+  - [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html)
+  - [Arduino ESP32](https://docs.espressif.com/projects/arduino-esp32/en/latest/index.html)
+- Webserver & websocket for esp32: https://lastminuteengineers.com/esp32-websocket-tutorial/
+- Esp32 PWM Basicis: https://lastminuteengineers.com/esp32-pwm-tutorial/
+- ledc docs: https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/ledc.html#
