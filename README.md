@@ -20,6 +20,9 @@ Giacomo Castellan
 - 4 photoresistors
 - 3D prited parts: ** link coming soon **2
 
+### code organization
+- 3D files contains the files to print and assemble 
+
 ### Arduino IDE Setup
 - Board: "ESP32S3 Dev Module"
 - **USB CDC On Boot**: "Enabled"
@@ -49,5 +52,21 @@ Giacomo Castellan
 - Esp32 PWM Basicis: https://lastminuteengineers.com/esp32-pwm-tutorial/
 - ledc docs: https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/ledc.html#
 
-### Note
-- circa 6s 20cs per fare un giro intero (base)
+### Who did what
+- giacomo
+  - esp code(libraries and main)
+  - 3D model and printing
+  - finite state machine diagram
+  - PID tuning tool(vibe coded)
+- matteo
+  - esp code(libraries and main)
+  - html development
+  - finite state machine diagram
+  - presentation
+- alessandro
+  - esp code(libraries and main)
+  - html development
+  - presentation
+  - electrical scheme
+
+
