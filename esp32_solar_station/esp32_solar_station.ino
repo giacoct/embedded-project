@@ -144,7 +144,23 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
 
     // code executed when a new message arrives from the ws
     String payload = String((char *)data);
-    if (payload.startsWith("#cord#") && state == 4) {  // catch control data for the motors
+    if (payload.startsWith("B#")) {  // PID base calibration
+      String temp = "";
+      temp += payload.substring(payload.indexOf('#kp='), payload.indexOf('#ki='));
+      temp += "$";
+      temp += payload.substring(payload.indexOf('#ki='), payload.indexOf('#kd='));
+      temp += "$";
+      temp += payload.substring(payload.indexOf('#kd='), payload.indexOf('##'));
+      Serial.printf(temp);
+
+      // mc.tunePID(kBasePID, kServoPID);
+    }
+    else if (payload.startsWith("S#")) {  // PID servo calibration
+
+
+      // mc.tunePID(kBasePID, kServoPID);
+    }
+    else if (payload.startsWith("#cord#") && state == 4) {  // catch control data for the motors
       mc.setBaseSpeed(payload.substring(7, payload.indexOf(';')).toInt());
       mc.setServoSpeed(payload.substring(payload.indexOf(';') + 2).toInt());
       //Serial.printf("Mot:%f\tServo:%f\n", baseSpeed, servoSpeed);
