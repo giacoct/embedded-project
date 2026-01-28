@@ -1,6 +1,11 @@
 # Embedded Software fo the IoT - project group 23
 Wrist joint with two axes, controlled by mobile device or automatic positioning. Demo using solar panels
 
+# Project Managers
+Matteo Zambon
+Alessandro Weber
+Giacomo Castellan
+
 ### Utilities [internal tools]:
 - Remove line breaks: https://www.sfu.ca/~mjordan/remove-line-breaks.htm
 - Gears generator: https://www.stlgears.com/generators/3dprint
@@ -13,7 +18,12 @@ Wrist joint with two axes, controlled by mobile device or automatic positioning.
 - 1 Slip ring (8 wires)
 - 1 Solar panel
 - 4 photoresistors
-- 3D prited parts: ** link coming soon **
+- 3D prited parts: ** link coming soon **2
+
+### instructions
+- you just have to print your 3D model from the link and assemble them as seen in the presentation
+- connect the cables as seen in the electrical scheme
+- upload the libraries and the main code with your arduino ide having the following parameters:
 
 ### Arduino IDE Setup
 - Board: "ESP32S3 Dev Module"
@@ -44,5 +54,19 @@ Wrist joint with two axes, controlled by mobile device or automatic positioning.
 - Esp32 PWM Basicis: https://lastminuteengineers.com/esp32-pwm-tutorial/
 - ledc docs: https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/ledc.html#
 
-### Note
-- circa 6s 20cs per fare un giro intero (base)
+### Who did what
+- giacomo
+  - esp code(libraries and main)
+  - 3D model and printing
+  - finite state machine diagram
+  - PID tuning tool(vibe coded)
+- matteo
+  - esp code(libraries and main)
+  - html development
+  - finite state machine diagram
+  - presentation
+- alessandro
+  - esp code(libraries and main)
+  - html development
+  - presentation
+  - electrical scheme

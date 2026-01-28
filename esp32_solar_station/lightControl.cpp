@@ -2,12 +2,12 @@
 #include "lightControl.h"
 
 LightControl::LightControl(uint8_t _pin)
-  : LightControl(_pin, 2048, 10) {
+  : LightControl(_pin, 2048, 50) {
   // delegated constructor
 }
 
 LightControl::LightControl(uint8_t _pin, uint16_t _baseline)
-  : LightControl(_pin, _baseline, 10) {
+  : LightControl(_pin, _baseline, 50) {
   // delegated constructor
 }
 
@@ -42,11 +42,11 @@ void LightControl::sample() {
 int LightControl::read() {
   unsigned long sum = 0;
   // buffer not full
-  uint16_t count = (fullBuffer) ? nReads : index;
+  int count = (fullBuffer) ? nReads : index;
   // buffer empty
   if (count == 0) return 0;
 
-  for (uint16_t i = 0; i < count; i++) {
+  for (int i = 0; i < count; i++) {
     sum += reads[i];
   }
 
