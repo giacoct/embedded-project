@@ -1,39 +1,32 @@
 #include "lightControl.h"
 #include <Arduino.h>
 
-LightControl::LightControl(uint8_t _pin, uint16_t _gain, uint16_t _offset) {
-  pin = _pin;
-  gain = _gain;
-  offset = _offset;
+LightControl::LightControl(uint8_t pin, float gain, float offset) {
+  _pin = pin;
+  _gain = gain;
+  _offset = offset;
 
-  fullBuffer = false;
-  index = 0;
+  _alpha = 0.1;     // 0.05 is more stable; 0.20 is faster but noisy
+  _avg = 0.0;
+  _init = false;
 }
 
 void LightControl::begin() {
-  pinMode(pin, INPUT);
+  pinMode(_pin, INPUT);
+}
+
+void LightControl::update() {
+  int raw = analogRead(_pin);
+
+  if (!_init) {
+    _avg  = raw;
+    _init = true;
+  } else {
+    _avg = _alpha * raw + (1.0 - _alpha) * _avg;
+  }
 }
 
 int LightControl::read() {
-  reads[index] = analogRead(pin);
-  index++;
-
-  if (index >= nReads) {
-    index = 0;
-    fullBuffer = true;
-  }
-
-  // avg
-  int count = (fullBuffer) ? nReads : index;  // buffer not full
-  if (count == 0) return 0;                   // buffer empty
-
-  unsigned long sum = 0;
-  for (int i = 0; i < count; i++) {
-    sum += reads[i];
-  }
-
-  float avg = (float)sum / count;
-  float norm = (avg - offset) / gain;
-
-  return (int)(norm);
+  float normalized = (_avg - _offset) / _gain;
+  return (int)(normalized + 0.5);
 }

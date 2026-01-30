@@ -5,19 +5,19 @@
 
 class LightControl {
 private:
-  uint8_t pin;
-  float gain;
-  float offset;
+  uint8_t _pin;
+  float _gain;
+  float _offset;
+  float _alpha;
 
-  static constexpr int nReads = 50;    // mobile average window
-  int reads[nReads];
-
-  uint16_t index;
-  bool fullBuffer;
+  float _avg;   // EMA
+  bool _init;
 
 public:
-  LightControl(uint8_t _pin, uint16_t _gain, uint16_t _offset);
+  LightControl(uint8_t pin, float gain, float offset);
+
   void begin();
+  void update();
   int read();
 
 };

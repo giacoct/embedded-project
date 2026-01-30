@@ -12,16 +12,16 @@
 const char *ssid = "SOLAR_MOBILE";
 const char *password = "militarygrade";
 
-double kBasePID[] = {0.05, 0.00001, 0};
-double kServoPID[] = {0.04, 0.00001, 0};
+double kBasePID[] = { 0.05, 0.00001, 0 };
+double kServoPID[] = { 0.04, 0.00001, 0 };
 
 // servo and base controller
 MotorController mc = MotorController(8, 3, 0.01);
 // photoresistors
 LightControl tl(6, 1.0000, 0.0);
-LightControl tr(5, 1.3468, 1.24);
-LightControl bl(4, 1.4379, 115.06);
-LightControl br(7, 1.3005, -30.89);
+LightControl tr(5, 1.3863, -32.39);
+LightControl bl(4, 1.4942, 53.00);
+LightControl br(7, 1.3449, -77.19);
 /*LightControl tl = LightControl(6, 1788);
 LightControl tr = LightControl(5, 2369);
 LightControl bl = LightControl(4, 2880);
@@ -55,25 +55,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 void joystickControl();
 long mapWithCenter(long x, long in_min, long in_center, long in_max, long out_min, long out_max);
 void IRAM_ATTR joystickClick();
-void solarTrackerLogic();
 
-
-void solarTrackerLogic() {
-  int tl_val = tl.read();
-  int tr_val = tr.read();
-  int bl_val = bl.read();
-  int br_val = br.read();
-
-  Serial.printf("TL: %04d  TR: %04d  BL: %04d  BR: %04d \t", tl_val, tr_val, bl_val, br_val);
-
-  double baseErr = (tl_val + bl_val - tr_val - br_val) / 2.0;
-  double servoErr = (tl_val + tr_val - bl_val - br_val) / 2.0;
-
-  //mc.moveWithPID(baseErr, -servoErr);
-  // serial output inside moveWithPID for debug purpose
-
-  Serial.println();
-}
 
 // interrupt
 void IRAM_ATTR joystickClick() {
@@ -120,18 +102,16 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
     // code executed when a new message arrives from the ws
     String payload = String((char *)data);
     if (payload.startsWith("B#")) {  // PID base calibration
-      kBasePID[0] = payload.substring(payload.indexOf("#kp=")+4, payload.indexOf("#ki=")).toFloat();
-      kBasePID[1] = payload.substring(payload.indexOf("#ki=")+4, payload.indexOf("#kd=")).toFloat();
-      kBasePID[2] = payload.substring(payload.indexOf("#kd=")+4, payload.indexOf("##")).toFloat();
+      kBasePID[0] = payload.substring(payload.indexOf("#kp=") + 4, payload.indexOf("#ki=")).toFloat();
+      kBasePID[1] = payload.substring(payload.indexOf("#ki=") + 4, payload.indexOf("#kd=")).toFloat();
+      kBasePID[2] = payload.substring(payload.indexOf("#kd=") + 4, payload.indexOf("##")).toFloat();
       mc.tunePID(kBasePID, kServoPID);
-    }
-    else if (payload.startsWith("S#")) {  // PID servo calibration
-      kServoPID[0] = payload.substring(payload.indexOf("#kp=")+4, payload.indexOf("#ki=")).toFloat();
-      kServoPID[1] = payload.substring(payload.indexOf("#ki=")+4, payload.indexOf("#kd=")).toFloat();
-      kServoPID[2] = payload.substring(payload.indexOf("#kd=")+4, payload.indexOf("##")).toFloat();
+    } else if (payload.startsWith("S#")) {  // PID servo calibration
+      kServoPID[0] = payload.substring(payload.indexOf("#kp=") + 4, payload.indexOf("#ki=")).toFloat();
+      kServoPID[1] = payload.substring(payload.indexOf("#ki=") + 4, payload.indexOf("#kd=")).toFloat();
+      kServoPID[2] = payload.substring(payload.indexOf("#kd=") + 4, payload.indexOf("##")).toFloat();
       mc.tunePID(kBasePID, kServoPID);
-    }
-    else if (payload.startsWith("#cord#") && state == 2) {  // catch control data for the motors
+    } else if (payload.startsWith("#cord#") && state == 2) {  // catch control data for the motors
       mc.setBaseSpeed(payload.substring(7, payload.indexOf(';')).toInt());
       mc.setServoSpeed(payload.substring(payload.indexOf(';') + 2).toInt());
       //Serial.printf("Mot:%f\tServo:%f\n", baseSpeed, servoSpeed);
@@ -169,13 +149,15 @@ void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
 
+  // LUTs init
+  tl.begin();
+  tr.begin();
+  bl.begin();
+  br.begin();
+
   // motor control
   mc.begin();
   mc.tunePID(kBasePID, kServoPID);
-  tl.begin();
-  tr.begin();
-  br.begin();
-  bl.begin();
 
   // joystick pin setup
   pinMode(joystickPin_x, INPUT);
@@ -213,40 +195,64 @@ void loop() {
 
   switch (state) {
     case 0:  // autonomous control
-      solarTrackerLogic();
-      if (buttonPressed) {
-        buttonPressed = false;
-        state = 1;
-        mc.stopAll();
-        Serial.printf("da 0 passato allo stato 3 (controllo manuel)\n");
+      {
+        tl.update();
+        tr.update();
+        bl.update();
+        br.update();
+
+        int tl_val = tl.read();
+        int tr_val = tr.read();
+        int bl_val = bl.read();
+        int br_val = br.read();
+
+        Serial.printf("TL:%04d  TR:%04d  BL:%04d  BR:%04d", tl_val, tr_val, bl_val, br_val);
+
+        double baseErr = (tl_val + bl_val - tr_val - br_val) / 2.0;
+        double servoErr = (tl_val + tr_val - bl_val - br_val) / 2.0;
+
+        // mc.moveWithPID(baseErr, -servoErr);
+        // serial output inside moveWithPID for debug purpose
+        Serial.println();
+
+        if (buttonPressed) {
+          buttonPressed = false;
+          state = 1;
+          mc.stopAll();
+          Serial.printf("da 0 passato allo stato 3 (controllo manuel)\n");
+        }
+        break;
       }
-      break;
     case 1:  // manual control with joystick
-      joystickControl();
-      mc.moveServo();
-      mc.moveBase();
-      if (buttonPressed) {
-        buttonPressed = false;
-        state = 0;
-        mc.stopAll();
-        Serial.printf("da 3 passato allo stato 0 (controllo automatico)\n");
+      {
+        joystickControl();
+        mc.moveServo();
+        mc.moveBase();
+        if (buttonPressed) {
+          buttonPressed = false;
+          state = 0;
+          mc.stopAll();
+          Serial.printf("da 3 passato allo stato 0 (controllo automatico)\n");
+        }
+        break;
       }
-      break;
     case 2:  // manual control thru websocket
-      mc.moveServo();
-      mc.moveBase();
-      if (buttonPressed) {
-        buttonPressed = false;
-        state = 1;
-        ws.textAll("#no-web#");
-        mc.stopAll();
-        Serial.printf("da 4 passato allo stato 3 (controllo manuel)\n");
+      {
+        mc.moveServo();
+        mc.moveBase();
+        if (buttonPressed) {
+          buttonPressed = false;
+          state = 1;
+          ws.textAll("#no-web#");
+          mc.stopAll();
+          Serial.printf("da 4 passato allo stato 3 (controllo manuel)\n");
+        }
+        break;
       }
-      break;
     default:
-      state = 0;
-      break;
+      {
+        state = 0;
+        break;
+      }
   }
-  // solar production
-  
 }
