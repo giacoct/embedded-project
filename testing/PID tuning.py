@@ -6,7 +6,7 @@ import threading
 import websockets
 
 WS_URI = "ws://127.0.0.1:81"
-CONFIG_FILE = "pid_constants.json"
+CONFIG_FILE = "./testing/pid_constants.json"
 RECONNECT_DELAY = 2
 
 

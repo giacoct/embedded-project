@@ -17,7 +17,7 @@ ws.on("message", (data) => {
     console.log("Risposta:", data.toString());
 });
 
-// Rimane aperto senza chiudere
+// Rimane aperto
 ws.on("close", () => {
     console.log("Connessione chiusa dal server.");
 });
