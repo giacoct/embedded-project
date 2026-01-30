@@ -6,20 +6,20 @@
 class LightControl {
 private:
   uint8_t pin;
-  uint16_t nReads;
+  float gain;
+  float offset;
 
-  int *reads;  // dynamic array
+  static constexpr int nReads = 50;    // mobile average window
+  int reads[nReads];
+
   uint16_t index;
-  uint16_t baseline;
   bool fullBuffer;
+
 public:
-  LightControl(uint8_t _pin);
-  LightControl(uint8_t _pin, uint16_t _baseline);
-  LightControl(uint8_t _pin, uint16_t _baseline, uint16_t _nReads);
-  ~LightControl();
+  LightControl(uint8_t _pin, uint16_t _gain, uint16_t _offset);
   void begin();
-  void sample();
   int read();
+
 };
 
 #endif

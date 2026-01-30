@@ -1,35 +1,20 @@
-#include <Arduino.h>
 #include "lightControl.h"
+#include <Arduino.h>
 
-LightControl::LightControl(uint8_t _pin)
-  : LightControl(_pin, 2048, 50) {
-  // delegated constructor
-}
-
-LightControl::LightControl(uint8_t _pin, uint16_t _baseline)
-  : LightControl(_pin, _baseline, 50) {
-  // delegated constructor
-}
-
-LightControl::LightControl(uint8_t _pin, uint16_t _baseline, uint16_t _nReads) {
+LightControl::LightControl(uint8_t _pin, uint16_t _gain, uint16_t _offset) {
   pin = _pin;
-  baseline = _baseline;
-  nReads = _nReads;
+  gain = _gain;
+  offset = _offset;
 
-  reads = new int[nReads];
-  index = 0;
   fullBuffer = false;
-}
-
-LightControl::~LightControl() {
-  delete[] reads;
+  index = 0;
 }
 
 void LightControl::begin() {
   pinMode(pin, INPUT);
 }
 
-void LightControl::sample() {
+int LightControl::read() {
   reads[index] = analogRead(pin);
   index++;
 
@@ -37,18 +22,18 @@ void LightControl::sample() {
     index = 0;
     fullBuffer = true;
   }
-}
 
-int LightControl::read() {
+  // avg
+  int count = (fullBuffer) ? nReads : index;  // buffer not full
+  if (count == 0) return 0;                   // buffer empty
+
   unsigned long sum = 0;
-  // buffer not full
-  int count = (fullBuffer) ? nReads : index;
-  // buffer empty
-  if (count == 0) return 0;
-
   for (int i = 0; i < count; i++) {
     sum += reads[i];
   }
 
-  return (1000 * sum) / (count * baseline);
+  float avg = (float)sum / count;
+  float norm = (avg - offset) / gain;
+
+  return (int)(norm);
 }

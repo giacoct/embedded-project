@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "motorController.h"
 
+#define DEBUG 1
 
 MotorController::MotorController(uint8_t _servoPin, uint8_t _basePin, float _kServo) {
   servoPos = (maxDutyCycle + minDutyCycle) / 2.0;
@@ -17,12 +18,10 @@ MotorController::MotorController(uint8_t _servoPin, uint8_t _basePin, float _kSe
 
 // Inizializzazione Hardware
 void MotorController::begin() {
-  // Setup PWM Servo (Y)
   ledcAttach(servoPin, pwmFreq, pwmResolution);
-  ledcWrite(servoPin, 50);
-
-  // Setup PWM Base (X)
   ledcAttach(basePin, pwmFreq, pwmResolution);
+
+  stopAll();
 
   t0 = millis();
 }
@@ -78,7 +77,7 @@ void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
 
   // ---------- move base ----------
   baseErrors[2] = (baseErrorInst - baseErrors[0]) / elapsedTime;  // derivative
-  baseErrors[1] += baseErrorInst * elapsedTime;                    // integrative
+  baseErrors[1] += baseErrorInst * elapsedTime;                   // integrative
   baseErrors[0] = baseErrorInst;                                  // proportional
 
   double outBase = 0.0;
@@ -91,7 +90,7 @@ void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
 
   // ---------- move servo ----------
   servoErrors[2] = (servoErrorInst - servoErrors[0]) / elapsedTime;  // derivative
-  servoErrors[1] += servoErrorInst * elapsedTime;                  // integrative
+  servoErrors[1] += servoErrorInst * elapsedTime;                    // integrative
   servoErrors[0] = servoErrorInst;                                   // proportional
 
   double outServo = 0.0;
@@ -100,19 +99,17 @@ void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
   }
 
   if (outServo > maxDutyCycle || outServo < minDutyCycle) {
-    servoErrors[1] -= servoErrorInst * elapsedTime;                  // integrative
+    servoErrors[1] -= servoErrorInst * elapsedTime;  // integrative
   }
   outServo += (minDutyCycle + maxDutyCycle) / 2;               // shift the PID center from 0 to the midpoint between minDutyCycle and maxDutyCycle
   outServo = constrain(outServo, minDutyCycle, maxDutyCycle);  // prevents integral wind-up
-  // setServoSpeed(outServo);
 
   // ---------- apply movement ----------
   int intOutServo = (int)outServo;
   int intOutBase = (int)outBase;
   Serial.printf(" P: %f \tI: %f \tD: %f \ttime: %f \tOutServo: %f", servoErrors[0], servoErrors[1], servoErrors[2], elapsedTime, outServo);
-  ledcWrite(basePin, (int) intOutBase);
-  ledcWrite(servoPin, (int) intOutServo);
-
+  if (!DEBUG) ledcWrite(basePin, (int)intOutBase);
+  if (!DEBUG) ledcWrite(servoPin, (int)intOutServo);
 
   previousTime = currentTime;
 }

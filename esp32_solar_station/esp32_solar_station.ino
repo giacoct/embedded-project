@@ -18,15 +18,14 @@ double kServoPID[] = {0.04, 0.00001, 0};
 // servo and base controller
 MotorController mc = MotorController(8, 3, 0.01);
 // photoresistors
+LightControl tl(6, 1.0000, 0.0);
+LightControl tr(5, 1.3468, 1.24);
+LightControl bl(4, 1.4379, 115.06);
+LightControl br(7, 1.3005, -30.89);
 /*LightControl tl = LightControl(6, 1788);
 LightControl tr = LightControl(5, 2369);
 LightControl bl = LightControl(4, 2880);
 LightControl br = LightControl(7, 2514);*/
-
-LightControl tl = LightControl(6, 1788);
-LightControl tr = LightControl(5, 2400);
-LightControl bl = LightControl(4, 2800);
-LightControl br = LightControl(7, 2514);
 
 // joystick pins
 const uint8_t joystickPin_x = 9;
@@ -60,54 +59,19 @@ void solarTrackerLogic();
 
 
 void solarTrackerLogic() {
-  // Low value = light
-  tl.sample();
-  tr.sample();
-  bl.sample();
-  br.sample();
+  int tl_val = tl.read();
+  int tr_val = tr.read();
+  int bl_val = bl.read();
+  int br_val = br.read();
 
-  Serial.printf("TL: %04d  TR: %04d  BL: %04d  BR: %04d \t", tl.read(), tr.read(), bl.read(), br.read());
+  Serial.printf("TL: %04d  TR: %04d  BL: %04d  BR: %04d \t", tl_val, tr_val, bl_val, br_val);
 
-  double baseErr = (tl.read() + bl.read() - tr.read() - br.read()) / 2.0;
-  double servoErr = (tl.read() + tr.read() - bl.read() - br.read()) / 2.0;
+  double baseErr = (tl_val + bl_val - tr_val - br_val) / 2.0;
+  double servoErr = (tl_val + tr_val - bl_val - br_val) / 2.0;
 
-  // double left  = tl.read() + bl.read();
-  // double right = tr.read() + br.read();
-  // double top   = tl.read() + tr.read();
-  // double bottom= bl.read() + br.read();
+  //mc.moveWithPID(baseErr, -servoErr);
+  // serial output inside moveWithPID for debug purpose
 
-  // double baseErr  = (left - right) / (left + right);
-  // double servoErr = (top - bottom) / (top + bottom);
-  mc.moveWithPID(baseErr, -servoErr);
-
-  // // --- CONTROLLO Y (TILT - Servo Standard) ---
-  // // Se Top è più luminoso di Bottom (valore numerico PIÙ BASSO = più luce)
-  // // avgTop < avgBot
-  // if (abs(avgTop - avgBot) > threshold) {
-  //   if (avgTop < avgBot) {
-  //     Serial.printf("move up \t");
-  //     // mc.setServoSpeed(1);
-  //   } else {
-  //     Serial.printf("move down \t");
-  //     // mc.setServoSpeed(-1);
-  //   }
-  // } else {
-  //   mc.setServoSpeed(0);
-  // }
-
-  // // --- CONTROLLO X (BASE - Servo Continuo) ---
-  // // avgLeft < avgRight
-  // if (abs(avgLeft - avgRight) > threshold) {
-  //   if (avgLeft < avgRight) {
-  //     Serial.printf("move left \t");
-  //     // mc.setBaseSpeed(-1);
-  //   } else {
-  //     Serial.printf("move right \t");
-  //     // mc.setBaseSpeed(1); // ruota a destra
-  //   }
-  // } else {
-  //   mc.setBaseSpeed(0);
-  // }
   Serial.println();
 }
 
@@ -242,8 +206,6 @@ void setup() {
     request->send_P(200, "text/html", index_html);
   });
   server.begin();  // Start webserver
-
-  
 }
 
 void loop() {
