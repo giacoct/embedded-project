@@ -1,122 +1,78 @@
 #include <Arduino.h>
 #include "motorController.h"
 
-#define DEBUG 1
-
-MotorController::MotorController(uint8_t _servoPin, uint8_t _basePin, float _kServo) {
-  servoPos = (maxDutyCycle + minDutyCycle) / 2.0;
-  kServo = _kServo;
-  baseSpeed = 0;
-  servoSpeed = 0.0;
+MotorController::MotorController(uint8_t servoPin, uint8_t basePin, float kServo) {
   // pins
-  basePin = _basePin;
-  servoPin = _servoPin;
-  // pid
-  currentTime = 0;
-  previousTime = currentTime;
+  _basePin = basePin;
+  _servoPin = servoPin;
+  // control
+  _kServo = kServo;
+  _servoPos = (maxDC + minDC) / 2.0;
+  _baseSpeed = 0;
+  _servoSpeed = 0.0;
 }
 
 // Inizializzazione Hardware
 void MotorController::begin() {
-  ledcAttach(servoPin, pwmFreq, pwmResolution);
-  ledcAttach(basePin, pwmFreq, pwmResolution);
-
+  ledcAttach(_servoPin, pwmFreq, pwmRes);
+  ledcAttach(_basePin, pwmFreq, pwmRes);
   stopAll();
-
   t0 = millis();
 }
 
 
 void MotorController::setBaseSpeed(int newSpeed) {
-  baseSpeed = constrain(newSpeed, -10, 10);
+  _baseSpeed = constrain(newSpeed, -10, 10);
 }
-
 void MotorController::setServoSpeed(int newSpeed) {
-  servoSpeed = constrain(newSpeed, -10, 10);
+  _servoSpeed = constrain(newSpeed, -10, 10);
 }
-
 
 void MotorController::moveBase() {
-  ledcWrite(basePin, map(baseSpeed, -12, 12, minDutyCycle, maxDutyCycle));  // maps to 12 instead of 10 to cap the speed of the base
+  ledcWrite(_basePin, map(_baseSpeed, -12, 12, minDC, maxDC));  // maps to 12 instead of 10 to cap the speed of the base
 }
-
 void MotorController::moveServo() {
   uint64_t t1 = millis();
-  uint64_t deltaT_ms = t1 - t0;
   t0 = t1;  // save for the next cycle
-  float deltaT = (float)deltaT_ms;
+  double deltaT = (double)(t1 - t0);
 
-  servoPos = servoPos + (servoSpeed * deltaT * kServo);
-  servoPos = constrain(servoPos, minDutyCycle, maxDutyCycle);
-  ledcWrite(servoPin, (int)servoPos);
+  _servoPos = _servoPos + (_servoSpeed * deltaT * _kServo);
+  _servoPos = constrain(_servoPos, minDC, maxDC);
+  ledcWrite(_servoPin, (int)_servoPos);
 }
 
-
-// Forced motor stop
 void MotorController::stopBase() {
-  ledcWrite(basePin, (maxDutyCycle + minDutyCycle) / 2);
-  baseSpeed = 0;
+  ledcWrite(_basePin, (maxDC + minDC) / 2);
+  _baseSpeed = 0;
 }
-
 void MotorController::stopServo() {
-  servoSpeed = 0;
+  _servoSpeed = 0;
 }
-
 void MotorController::stopAll() {
   stopBase();
   stopServo();
 }
 
 
-// PID control
-void MotorController::moveWithPID(double baseErrorInst, double servoErrorInst) {
-
-  currentTime = micros();
-  if (currentTime == previousTime) return;
-  double elapsedTime = (currentTime - previousTime) / 1000.0;  // elapsed time in milliseconds
-
+// automatic control
+void MotorController::moveAuto(double baseError, double servoError) {
   // ---------- move base ----------
-  baseErrors[2] = (baseErrorInst - baseErrors[0]) / elapsedTime;  // derivative
-  baseErrors[1] += baseErrorInst * elapsedTime;                   // integrative
-  baseErrors[0] = baseErrorInst;                                  // proportional
-
-  double outBase = 0.0;
-  for (int i = 0; i < 3; i++) {
-    outBase += baseErrors[i] * baseK[i];
-  }
-  outBase += (minDutyCycle + maxDutyCycle) / 2;              // shift the PID center from 0 to the midpoint between minDutyCycle and maxDutyCycle
-  outBase = constrain(outBase, minDutyCycle, maxDutyCycle);  // prevents integral wind-up
-  // setBaseSpeed(outBase);
+  double outBase = baseError * kpBase;
+  outBase += (minDC + maxDC) / 2;              // shift the PID center from 0 to the midpoint between minDC and maxDC
+  outBase = constrain(outBase, minDC, maxDC);  // security measure
 
   // ---------- move servo ----------
-  servoErrors[2] = (servoErrorInst - servoErrors[0]) / elapsedTime;  // derivative
-  servoErrors[1] += servoErrorInst * elapsedTime;                    // integrative
-  servoErrors[0] = servoErrorInst;                                   // proportional
-
-  double outServo = 0.0;
-  for (int i = 0; i < 3; i++) {
-    outServo += servoErrors[i] * servoK[i];
-  }
-
-  if (outServo > maxDutyCycle || outServo < minDutyCycle) {
-    servoErrors[1] -= servoErrorInst * elapsedTime;  // integrative
-  }
-  outServo += (minDutyCycle + maxDutyCycle) / 2;               // shift the PID center from 0 to the midpoint between minDutyCycle and maxDutyCycle
-  outServo = constrain(outServo, minDutyCycle, maxDutyCycle);  // prevents integral wind-up
+  double outServo = servoError * kpServo;
+  outServo += (minDC + maxDC) / 2;               // shift the PID center from 0 to the midpoint between minDC and maxDC
+  outServo = constrain(outServo, minDC, maxDC);  // security measure
 
   // ---------- apply movement ----------
-  int intOutServo = (int)outServo;
-  int intOutBase = (int)outBase;
   Serial.printf(" P: %f \tI: %f \tD: %f \ttime: %f \tOutServo: %f", servoErrors[0], servoErrors[1], servoErrors[2], elapsedTime, outServo);
-  if (!DEBUG) ledcWrite(basePin, (int)intOutBase);
-  if (!DEBUG) ledcWrite(servoPin, (int)intOutServo);
-
-  previousTime = currentTime;
+  ledcWrite(_basePin, (int)outBase);
+  ledcWrite(_servoPin, (int)outServo);
 }
 
-void MotorController::tunePID(const double* _baseK, const double* _servoK) {
-  for (int i = 0; i < 3; i++) {
-    baseK[i] = _baseK[i];
-    servoK[i] = _servoK[i];
-  }
+void MotorController::tune(double kpBase, double kpServo) {
+  _kpBase = kpBase;
+  _kpServo = kpServo;
 }

@@ -12,8 +12,8 @@
 const char *ssid = "SOLAR_MOBILE";
 const char *password = "militarygrade";
 
-double kBasePID[] = { 0.05, 0.00001, 0 };
-double kServoPID[] = { 0.04, 0.00001, 0 };
+double kBasePID[] = { 0.0, 0.0, 0.0 };
+double kServoPID[] = { 0.0, 0.0, 0.0 };
 
 // servo and base controller
 MotorController mc = MotorController(8, 3, 0.01);
@@ -28,16 +28,13 @@ const uint8_t joystickPin_x = 9;
 const uint8_t joystickPin_y = 10;
 const uint8_t joystickButtonPin = 11;
 
-// solar Tracking Logic
-int threshold = 100;  // Sensitivity: minimum difference in light to move
-uint64_t t_auto = 0;
-
 // joystick control
 float joystickOld_x = 0.0, joystickOld_y = 0.0;
 bool buttonPressed = false;
 uint64_t t0 = 0;
-// state variable
-int state = 0;  // 0-auto,1-move to optimal,2-reset threshold,3-joystick,4-websocket
+
+// FSM state
+int state = 0;
 
 // AsyncWebServer object on port 80
 AsyncWebServer server(80);
