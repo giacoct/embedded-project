@@ -7,19 +7,17 @@ class LightControl {
 private:
   uint8_t _pin;
   float _gain;
-  float _offset;
-  float _alpha;
-
-  float _avg;   // EMA
+  float _avg;
   bool _init;
+  
+  static constexpr float ALPHA = 0.1;
 
 public:
-  LightControl(uint8_t pin, float gain, float offset);
+  LightControl(uint8_t pin, float gain);
 
   void begin();
   void update();
-  int read();
-
+  unsigned int read();
 };
 
 #endif

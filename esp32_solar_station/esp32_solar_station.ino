@@ -18,14 +18,10 @@ double kServoPID[] = { 0.04, 0.00001, 0 };
 // servo and base controller
 MotorController mc = MotorController(8, 3, 0.01);
 // photoresistors
-LightControl tl(6, 1.0000, 0.0);
-LightControl tr(5, 1.3863, -32.39);
-LightControl bl(4, 1.4942, 53.00);
-LightControl br(7, 1.3449, -77.19);
-/*LightControl tl = LightControl(6, 1788);
-LightControl tr = LightControl(5, 2369);
-LightControl bl = LightControl(4, 2880);
-LightControl br = LightControl(7, 2514);*/
+LightControl tl(6, 1.300);
+LightControl tr(5, 0.955);
+LightControl bl(4, 0.860);
+LightControl br(7, 1.008);
 
 // joystick pins
 const uint8_t joystickPin_x = 9;
@@ -46,7 +42,6 @@ int state = 0;  // 0-auto,1-move to optimal,2-reset threshold,3-joystick,4-webso
 // AsyncWebServer object on port 80
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
-
 
 
 // function prototypes - optimization
