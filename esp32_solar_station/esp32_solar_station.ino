@@ -15,7 +15,7 @@ const char *password = "militarygrade";
 // servo and base controller
 MotorController mc = MotorController(8, 3, 0.0005);  // pin servo; pin base; kServo (higher is faster)
 double kpBase = 0.2;
-double kpServo = 0.1;
+double kpServo = 0.2;
 
 // photoresistors
 LightControl tl(6, 1.300);
