@@ -16,6 +16,7 @@ class PIDGui:
 
         self.kp_base = tk.StringVar(value="0")
         self.kp_servo = tk.StringVar(value="0")
+        self.deadzone = tk.StringVar(value="0")  # <-- New deadzone variable
         self.status_var = tk.StringVar(value="WebSocket: Disconnected")
 
         self.websocket = None
@@ -31,14 +32,15 @@ class PIDGui:
         main_frame = ttk.Frame(self.root, padding=10)
         main_frame.grid(row=0, column=0, sticky="nsew")
 
-        # Pannelli Input
+        # Input Panels
         self.build_input(main_frame, "Base KP", self.kp_base, self.send_base, 0)
         self.build_input(main_frame, "Servo KP", self.kp_servo, self.send_servo, 1)
+        self.build_input(main_frame, "Deadzone", self.deadzone, self.send_deadzone, 2)  # <-- Deadzone input
 
-        # Terminale
+        # Terminal
         self.terminal = tk.Text(main_frame, width=40, height=10, state="disabled", 
                                  background="#111", foreground="#0f0", wrap="word")
-        self.terminal.grid(row=0, column=2, padx=10, sticky="nsew")
+        self.terminal.grid(row=0, column=3, padx=10, sticky="nsew")
 
         # Status Bar
         ttk.Label(self.root, textvariable=self.status_var, relief="sunken", anchor="w").grid(row=1, column=0, sticky="ew")
@@ -57,11 +59,16 @@ class PIDGui:
                 data = json.load(f)
                 self.kp_base.set(data.get("base", "0"))
                 self.kp_servo.set(data.get("servo", "0"))
+                self.deadzone.set(data.get("deadzone", "0"))  # <-- Load deadzone
         except (FileNotFoundError, json.JSONDecodeError): pass
 
     def save_constants(self):
         with open(CONFIG_FILE, "w") as f:
-            json.dump({"base": self.kp_base.get(), "servo": self.kp_servo.get()}, f)
+            json.dump({
+                "base": self.kp_base.get(),
+                "servo": self.kp_servo.get(),
+                "deadzone": self.deadzone.get()  # <-- Save deadzone
+            }, f)
 
     def send_base(self):
         self.save_constants()
@@ -70,6 +77,10 @@ class PIDGui:
     def send_servo(self):
         self.save_constants()
         self.send_ws(f"#KS#{self.kp_servo.get()}")
+
+    def send_deadzone(self):
+        self.save_constants()
+        self.send_ws(f"#DZ#{self.deadzone.get()}")  # <-- Send deadzone
 
     # ================= WebSocket =================
 
