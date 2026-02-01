@@ -20,11 +20,11 @@ Giacomo Castellan
 - 4 photoresistors
 - 3D prited parts: ** link coming soon **2
 
-### instructions
-- you just have to print your 3D model from the link and assemble them as seen in the presentation
-- connect the cables as seen in the electrical scheme
-![alt text](image.png)
-- upload the libraries and the main code with your arduino ide having the following parameters:
+### Instructions:
+- You just have to print your 3D model from the link and assemble them as seen in the presentation.
+- Connect the cables as seen in the electrical scheme
+![alt text](wiring-diagram.png)
+- Upload the libraries and the main code with your arduino ide having the following parameters:
 
 ### Arduino IDE Setup
 - Board: "ESP32S3 Dev Module"
@@ -47,7 +47,7 @@ Giacomo Castellan
 - Zigbee Mode: "Disabled"
 
 ### Code description
-we have our main that works as a finite state machine that is linked to a manual,automatic and web control.
+We have our main that works as a finite state machine that is linked to a manual,automatic and web control.
 You can access to the web mode sia the wifi "SOLAR_MOBILE" created by the esp(you need to install the specific library) and then access to the web page on adress 192.168.4.1 with the wifi password on the code.
 Here you can see that you can switch between modalities with the various buttons and switches.
 The porpouse of the automatic mode is to get the better illumination on our panel.
@@ -55,26 +55,26 @@ You can customize the various parameters to modify how fast the turret moves.
 
 ### Requirments
 The libraries you need to have are:
--WiFi.h
--AsyncTCP.h
--ESPAsyncWebServer.h
--"website.cpp"
--"motorController.h"
--"lightControl.h"
+- WiFi.h
+- AsyncTCP.h
+- ESPAsyncWebServer.h
+- "website.cpp"
+- "motorController.h"
+- "lightControl.h"
 
 
 ### Who did what
-- giacomo
+- Giacomo
   - esp code(libraries and main)
   - 3D model and printing
   - finite state machine diagram
   - PID tuning tool(vibe coded)
-- matteo
+- Matteo
   - esp code(libraries and main)
   - html development
   - finite state machine diagram
   - presentation
-- alessandro
+- Alessandro
   - esp code(libraries and main)
   - html development
   - presentation
