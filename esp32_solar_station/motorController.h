@@ -5,17 +5,18 @@
 
 class MotorController {
 private:
-  static constexpr uint8_t pwmFreq = 50;        // PWM frequency specific to servo motor
-  static constexpr uint8_t pwmRes = 10;  // PWM resolution 2^10 values
-  static constexpr uint8_t minDC = 40;   // real value: minDC = 26
-  static constexpr uint8_t maxDC = 110;  // real value: maxDC = 126
+  static constexpr uint8_t pwmFreq = 50;                  // PWM frequency specific to servo motor
+  static constexpr uint8_t pwmRes = 10;                   // PWM resolution 2^10 values
+  static constexpr uint8_t minDC = 41;                    // real value: minDC = 26
+  static constexpr uint8_t maxDC = 111;                   // real value: maxDC = 126
+  static constexpr uint8_t zeroDC = (minDC + maxDC) / 2;  // real value: maxDC = 126
 
   // ----- pins -----
   uint8_t _servoPin, _basePin;
 
   // ----- base & servo control -----
-  float _kServo;
-  float _servoPos;
+  double _kServo;
+  double _servoPos;
   int _servoSpeed, _baseSpeed;
   uint64_t t0;
 
@@ -23,7 +24,7 @@ private:
   double _kpBase, _kpServo;
 
 public:
-  MotorController(uint8_t _servoPin, uint8_t _basePin, float _kServo);
+  MotorController(uint8_t _servoPin, uint8_t _basePin, double _kServo);
   void begin();
   // manual movement
   void setBaseSpeed(int newSpeed);
@@ -34,7 +35,7 @@ public:
   void stopServo();
   void stopAll();
   // auto movement - proportional
-  void moveAuto(double baseError, double servoError);
+  void moveAuto(int baseError, int servoError);
   void tune(double kpBase, double kpServo);
 };
 

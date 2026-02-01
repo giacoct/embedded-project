@@ -1,15 +1,14 @@
 #include <Arduino.h>
 #include "motorController.h"
 
-MotorController::MotorController(uint8_t servoPin, uint8_t basePin, float kServo) {
-  // pins
+MotorController::MotorController(uint8_t servoPin, uint8_t basePin, double kServo) {
   _basePin = basePin;
   _servoPin = servoPin;
-  // control
   _kServo = kServo;
-  _servoPos = (maxDC + minDC) / 2.0;
+
+  _servoPos = zeroDC;
   _baseSpeed = 0;
-  _servoSpeed = 0.0;
+  _servoSpeed = 0;
 }
 
 // Inizializzazione Hardware
@@ -22,22 +21,23 @@ void MotorController::begin() {
 
 
 void MotorController::setBaseSpeed(int newSpeed) {
-  _baseSpeed = constrain(newSpeed, -10, 10);
+  _baseSpeed = constrain(newSpeed, -100, 100);
 }
 void MotorController::setServoSpeed(int newSpeed) {
-  _servoSpeed = constrain(newSpeed, -10, 10);
+  _servoSpeed = constrain(newSpeed, -100, 100);
 }
 
 void MotorController::moveBase() {
-  ledcWrite(_basePin, map(_baseSpeed, -12, 12, minDC, maxDC));  // maps to 12 instead of 10 to cap the speed of the base
+  ledcWrite(_basePin, map(_baseSpeed, -100, 100, minDC, maxDC));  // maps to 12 instead of 10 to cap the speed of the base
 }
 void MotorController::moveServo() {
-  uint64_t t1 = millis();
+  uint64_t t1 = micros();
+  double deltaT = (t1 - t0) * 0.001;    // milliseconds
   t0 = t1;  // save for the next cycle
-  double deltaT = (double)(t1 - t0);
 
-  _servoPos = _servoPos + (_servoSpeed * deltaT * _kServo);
+  _servoPos += (double)(_servoSpeed) * deltaT * _kServo;
   _servoPos = constrain(_servoPos, minDC, maxDC);
+
   ledcWrite(_servoPin, (int)_servoPos);
 }
 
@@ -55,21 +55,19 @@ void MotorController::stopAll() {
 
 
 // automatic control
-void MotorController::moveAuto(double baseError, double servoError) {
-  // ---------- move base ----------
-  double outBase = baseError * kpBase;
-  outBase += (minDC + maxDC) / 2;              // shift the PID center from 0 to the midpoint between minDC and maxDC
-  outBase = constrain(outBase, minDC, maxDC);  // security measure
+void MotorController::moveAuto(int baseError, int servoError) {
+  int tempBaseSpeed = baseError * _kpBase;
+  int tempServoSpeed = servoError * _kpServo;
 
-  // ---------- move servo ----------
-  double outServo = servoError * kpServo;
-  outServo += (minDC + maxDC) / 2;               // shift the PID center from 0 to the midpoint between minDC and maxDC
-  outServo = constrain(outServo, minDC, maxDC);  // security measure
+  tempBaseSpeed = (abs(tempBaseSpeed) <= 10) ? 0 : tempBaseSpeed;
+  tempServoSpeed = (abs(tempServoSpeed) <= 10) ? 0 : tempServoSpeed;
+  setBaseSpeed(tempBaseSpeed);
+  setServoSpeed(tempServoSpeed);
 
-  // ---------- apply movement ----------
-  Serial.printf(" P: %f \tI: %f \tD: %f \ttime: %f \tOutServo: %f", servoErrors[0], servoErrors[1], servoErrors[2], elapsedTime, outServo);
-  ledcWrite(_basePin, (int)outBase);
-  ledcWrite(_servoPin, (int)outServo);
+  Serial.printf("baseError: %d \t servoError: %d \t |   baseSpeed: %d \t servoSpeed: %d \t \n", baseError, servoError, _baseSpeed, _servoSpeed);
+
+  moveBase();
+  moveServo();
 }
 
 void MotorController::tune(double kpBase, double kpServo) {

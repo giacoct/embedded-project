@@ -4,7 +4,7 @@
 LightControl::LightControl(uint8_t pin, float gain) {
   _pin = pin;
   _gain = gain;
-  _avg = 0.0;
+  _avg = 0.0f;
   _init = false;
 }
 
@@ -26,5 +26,5 @@ void LightControl::update() {
 }
 
 unsigned int LightControl::read() {
-  return (int)(_gain * _avg + 0.5f);
+  return (int)(_gain * _avg + 0.5f);    // rounded
 }

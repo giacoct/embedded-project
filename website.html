@@ -118,7 +118,7 @@
   <script>
     const ws_info = document.getElementById('ws_info');
 
-    let connection = new WebSocket("ws://192.168.4.1/ws");
+    let connection = new WebSocket("ws://127.0.0.1:81");    // 192.168.4.1/ws
     connection.onopen = function () {
       ws_info.textContent = "Connected!";
       ws_info.style.color = "#069c56";
@@ -154,20 +154,6 @@
       }
       if (toggle_web.checked) {
         connection.send(`#control#`);
-        /* Riporta lo stato effettivo del websocket
-        if (connection.readyState === WebSocket.OPEN) {
-          ws_info.textContent = "Connected!";
-          ws_info.style.color = "#069c56";
-          connection.send(`#control#`);
-        }
-        if (connection.readyState == WebSocket.CONNECTING) {
-          ws_info.textContent = "Connecting...";
-          ws_info.style.color = "white";
-        }
-        if (connection.readyState == WebSocket.CLOSED) {
-          ws_info.textContent = `WebSocket error`;
-          ws_info.style.color = "#d3212c";
-        }*/
       } else {
         connection.send(`#toggle#`);
       }
@@ -211,8 +197,8 @@
 
       stick.style.transform = `translate(${limitedX}px, ${limitedY}px)`;
 
-      const normX = (+(limitedX / maxRadius).toFixed(1)) * 10;
-      const normY = (-(limitedY / maxRadius).toFixed(1)) * 10;
+      const normX = (+(limitedX / maxRadius).toFixed(1)) * 100;
+      const normY = (-(limitedY / maxRadius).toFixed(1)) * 100;
 
       coords.textContent = `X: ${normX}, Y: ${normY}`;
 
@@ -220,7 +206,7 @@
         oldX = normX;
         oldY = normY;
 
-        if (toggle_web.checked && connection.readyState === WebSocket.OPEN)
+        if (connection.readyState === WebSocket.OPEN)
           connection.send(`#cord#X${normX};Y${normY}`);
       }
     });
