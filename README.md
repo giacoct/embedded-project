@@ -1,15 +1,10 @@
 # Embedded Software fo the IoT - project group 23
 Wrist joint with two axes, controlled by mobile device or automatic positioning. Demo using solar panels
 
-# Project Managers
+### Project Managers
 Matteo Zambon
 Alessandro Weber
 Giacomo Castellan
-
-### Utilities [internal tools]:
-- Remove line breaks: https://www.sfu.ca/~mjordan/remove-line-breaks.htm
-- Gears generator: https://www.stlgears.com/generators/3dprint
-  - M=1, PA=20, GL=10.
 
 ### Bill of materials:
 - 1 _ESP32 S3_ board
@@ -21,7 +16,7 @@ Giacomo Castellan
 - 3D prited parts: ** link coming soon **2
 
 ### Instructions:
-- You just have to print your 3D model from the link and assemble them as seen in the presentation.
+- You just have to print your 3D model from this link and assemble it.
 - Connect the cables as seen in the electrical scheme
 ![alt text](wiring-diagram.png)
 - Upload the libraries and the main code with your arduino ide having the following parameters:
