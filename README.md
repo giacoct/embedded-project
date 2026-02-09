@@ -48,7 +48,7 @@ Giacomo Castellan
 
 ### Code description
 We have our main that works as a finite state machine that is linked to a manual,automatic and web control.
-You can access to the web mode sia the wifi "SOLAR_MOBILE" created by the esp(you need to install the specific library) and then access to the web page on adress 192.168.4.1 with the wifi password on the code.
+You can access to the web mode via the wifi "SOLAR_MOBILE" created by the esp (you need to install the specific library) and then access to the web page on adress 192.168.4.1 with the wifi password on the code.
 Here you can see that you can switch between modalities with the various buttons and switches.
 The porpouse of the automatic mode is to get the better illumination on our panel.
 You can customize the various parameters to modify how fast the turret moves.
