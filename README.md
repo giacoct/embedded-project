@@ -13,12 +13,12 @@ Giacomo Castellan
 - 1 Slip ring (8 wires)
 - 1 Solar panel
 - 4 photoresistors
-- 3D prited parts: ** link coming soon **2
+- 3D prited parts: [at this link](https://www.printables.com/model/1574943-sunflower-project)
 
 ### Instructions:
 - You just have to print your 3D model from this link and assemble it.
 - Connect the cables as seen in the electrical scheme
-![alt text](wiring-diagram.png)
+![wiring diagram](wiring-diagram.png)
 - Upload the libraries and the main code with your arduino ide having the following parameters and [setup](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/):
 
 ### Arduino IDE Setup
