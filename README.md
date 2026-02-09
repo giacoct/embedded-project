@@ -24,7 +24,7 @@ Giacomo Castellan
 - You just have to print your 3D model from the link and assemble them as seen in the presentation.
 - Connect the cables as seen in the electrical scheme
 ![alt text](wiring-diagram.png)
-- Upload the libraries and the main code with your arduino ide having the following parameters:
+- Upload the libraries and the main code with your arduino ide having the following parameters and [setup](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/):
 
 ### Arduino IDE Setup
 - Board: "ESP32S3 Dev Module"
@@ -53,32 +53,23 @@ Here you can see that you can switch between modalities with the various buttons
 The porpouse of the automatic mode is to get the better illumination on our panel.
 You can customize the various parameters to modify how fast the turret moves.
 
+![alt text](FSM.png)
+
 ### Requirments
 The libraries you need to have are:
 - WiFi.h
-- AsyncTCP.h
-- ESPAsyncWebServer.h
-- "website.cpp"
-- "motorController.h"
-- "lightControl.h"
+- [AsyncTCP.h](https://github.com/ESP32Async/AsyncTCP)
+- [ESPAsyncWebServer.h](https://github.com/ESP32Async/ESPAsyncWebServer)
 
 
 ### Who did what
-- Giacomo
-  - esp code(libraries and main)
-  - 3D model and printing
-  - finite state machine diagram
-  - PID tuning tool(vibe coded)
-- Matteo
-  - esp code(libraries and main)
-  - html development
-  - finite state machine diagram
-  - presentation
-- Alessandro
-  - esp code(libraries and main)
-  - html development
-  - presentation
-  - electrical scheme
+
+| Giacomo                      | Matteo                       | Alessandro                   |
+|:-----------------------------|:----------------------------:|-----------------------------:|
+| esp code(libraries and main) | esp code(libraries and main) | esp code(libraries and main) |
+| 3D model and printing        | html development             | html development             |
+| finite state machine diagram | finite state machine diagram | video                        |
+| PID tuning tool(vibe coded)  | presentation                 | electrical scheme            |
 
 
 ### Sources:
