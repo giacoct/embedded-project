@@ -1,9 +1,17 @@
 # Embedded Software fo the IoT - project group 23
-Wrist joint with two axes, controlled by mobile device or automatic positioning. Demo using solar panels
+Wrist joint with two axes, controlled by mobile device or automatic positioning.
+
+We have our main that works as a finite state machine that is linked to a manual, automatic and web control.
+You can access to the web mode via the wifi "SOLAR_MOBILE" created by the esp (you need to install the specific library) and then access to the web page on adress 192.168.4.1 with the wifi password on the code.
+Here you can see that you can switch between modalities with the various buttons and switches.
+The porpouse of the automatic mode is to get the better illumination on our panel.
+You can customize the various parameters to modify how fast the turret moves.
+
+![alt text](FSM.png)
 
 ### Project Managers
-Matteo Zambon
-Alessandro Weber
+Matteo Zambon,
+Alessandro Weber,
 Giacomo Castellan
 
 ### Bill of materials:
@@ -16,12 +24,12 @@ Giacomo Castellan
 - 3D prited parts: [at this link](https://www.printables.com/model/1574943-sunflower-project)
 
 ### Instructions:
-- You just have to print your 3D model from this link and assemble it.
+- You just have to print your 3D model and assemble it. 
 - Connect the cables as seen in the electrical scheme
 ![wiring diagram](wiring-diagram.png)
-- Upload the libraries and the main code with your arduino ide having the following parameters and [setup](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/):
+- Upload the libraries and the main code with your arduino ide having the following parameters and [board setup](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/):
 
-### Arduino IDE Setup
+### Arduino IDE Setup (tools)
 - Board: "ESP32S3 Dev Module"
 - **USB CDC On Boot**: "Enabled"
 - **CPU Frequency**: "240MHz (WiFi)"
@@ -41,18 +49,32 @@ Giacomo Castellan
 - USB Mode: "Hardware CDC and JTAG"
 - Zigbee Mode: "Disabled"
 
-### Code description
-We have our main that works as a finite state machine that is linked to a manual,automatic and web control.
-You can access to the web mode via the wifi "SOLAR_MOBILE" created by the esp (you need to install the specific library) and then access to the web page on adress 192.168.4.1 with the wifi password on the code.
-Here you can see that you can switch between modalities with the various buttons and switches.
-The porpouse of the automatic mode is to get the better illumination on our panel.
-You can customize the various parameters to modify how fast the turret moves.
+### Project Structure
 
-![alt text](FSM.png)
+```text
+embedded-project
+│   README.md
+│   website.html
+│   wiring-diagram.png
+│
+├───esp32_solar_station
+│       esp32_solar_station.ino
+│       lightControl.cpp
+│       lightControl.h
+│       motorController.cpp
+│       motorController.h
+│       website.cpp
+│
+└───testing
+        PID tuning.py
+        pid_constants.json
+        ws_client - send noweb.py
+        ws_client - test.js
+        ws_server - echo.py
+```
 
 ### Requirments
 The libraries you need to have are:
-- WiFi.h
 - [AsyncTCP.h](https://github.com/ESP32Async/AsyncTCP)
 - [ESPAsyncWebServer.h](https://github.com/ESP32Async/ESPAsyncWebServer)
 
@@ -64,7 +86,11 @@ The libraries you need to have are:
 | esp code(libraries and main) | esp code(libraries and main) | esp code(libraries and main) |
 | 3D model and printing        | html development             | html development             |
 | finite state machine diagram | finite state machine diagram | video                        |
-| PID tuning tool(vibe coded)  | presentation                 | electrical scheme            |
+|                              | presentation                 | electrical scheme            |
+
+### Links
+- [PPT Presentation]()
+- [Video Presentation]()
 
 
 ### Sources:
