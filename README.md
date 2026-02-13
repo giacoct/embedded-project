@@ -89,7 +89,7 @@ The libraries you need to have are:
 | video                        | presentation                 | electrical scheme            |
 
 ### Links
-- [PPT Presentation](https://drive.google.com/file/d/1mTUMiO71hmGW7UThBMXBz2UmjBgtTD3f/view?usp=drive_link)
+- [PPT Presentation](https://drive.google.com/file/d/1SDzr-Ak0xUK7H76m8eDZOuBcJwM7BU4j/view?usp=drive_link)
 - [Video Presentation]()
 
 
