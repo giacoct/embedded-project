@@ -1,4 +1,4 @@
-# Embedded Software fo the IoT - project group 23
+# Embedded Software fo the IoT - project group 23 - SUNFLOWER
 Wrist joint with two axes, controlled by mobile device or automatic positioning.
 
 We have our main that works as a finite state machine that is linked to a manual, automatic and web control.
@@ -9,7 +9,7 @@ You can customize the various parameters to modify how fast the turret moves.
 
 ![alt text](FSM.png)
 
-### Project Managers
+### Project Members
 Matteo Zambon,
 Alessandro Weber,
 Giacomo Castellan
