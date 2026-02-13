@@ -17,7 +17,7 @@ MotorController mc(8, 3, 0.0005);  // pin servo; pin base; kServo (higher is fas
                                    // see the setup to modify the mc constants
 
 // photoresistors
-LightControl tl(6, 1.300);
+LightControl tl(6, 1.300);    //pin LDR, gain
 LightControl tr(5, 0.955);
 LightControl bl(4, 0.860);
 LightControl br(7, 1.008);
@@ -26,6 +26,7 @@ LightControl br(7, 1.008);
 const uint8_t joystickPinX = 9;
 const uint8_t joystickPinY = 10;
 const uint8_t joystickButtonPin = 11;
+
 // joystick control
 float joystickOldX = 0.0, joystickOldY = 0.0;
 bool buttonPressed = false;
@@ -62,7 +63,6 @@ void setup() {
   mc.kpBase = 0.5;
   mc.kpServo = 2.5;
   mc.deadzone = 80;
-  // mc.tune(kpBase, kpServo);
 
   // joystick pin setup
   pinMode(joystickPinX, INPUT);
@@ -115,7 +115,7 @@ void loop() {
           buttonPressed = false;
           state = 1;
           mc.stopMotors();
-          Serial.printf("Passato allo stato 3 (controllo manuel)\n");
+          //Serial.printf("Passato allo stato 3 (controllo manuel)\n");
         }
       }
       break;
@@ -128,7 +128,7 @@ void loop() {
           buttonPressed = false;
           state = 0;
           mc.stopMotors();
-          Serial.printf("Passato allo stato 0 (controllo automatico)\n");
+          //Serial.printf("Passato allo stato 0 (controllo automatico)\n");
         }
       }
       break;
@@ -140,7 +140,7 @@ void loop() {
           state = 1;
           ws.textAll("#no-web#");
           mc.stopMotors();
-          Serial.printf("Passato allo stato 3 (controllo manuel)\n");
+          //Serial.printf("Passato allo stato 3 (controllo manuel)\n");
         }
       }
       break;
@@ -156,6 +156,7 @@ void loop() {
 
 /* * * * * * * * * * *  FUNCTIONS  * * * * * * * * * * */
 
+//handle client connections
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
   switch (type) {
     case WS_EVT_CONNECT:
@@ -173,12 +174,13 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   }
 }
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called on websocket's incoming message
+// called on websocket's incoming message
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) { 
   AwsFrameInfo *info = (AwsFrameInfo *)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
     data[len] = 0;
 
-    // code executed when a new message arrives from the ws
+    /*// code executed when a new message arrives from the ws     //used for calibration ->testing folder
     String payload = String((char *)data);
     if (payload.startsWith("#KB#")) {
       // base constant calibration
@@ -189,16 +191,17 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {  // called o
     } else if (payload.startsWith("#DZ#")) {
       // deadzone calibration
       mc.deadzone = payload.substring(4).toInt();
-    } else if (payload.startsWith("#cord#") && state == 2) {
+    } else*/ 
+    if (payload.startsWith("#cord#") && state == 2) {
       // catch control data for the motors
       mc.setBaseSpeed(payload.substring(7, payload.indexOf(';')).toInt());
       mc.setServoSpeed(payload.substring(payload.indexOf(';') + 2).toInt());
       //Serial.printf("Mot:%f\tServo:%f\n", baseSpeed, servoSpeed);
     } else if (payload.startsWith("#toggle#") && state == 2) {
       state = 0;
-      Serial.printf("Passato allo stato 0 (controllo automatico)\n");
+      //Serial.printf("Passato allo stato 0 (controllo automatico)\n");
     } else if (payload.startsWith("#control#")) {
-      Serial.printf("Passato allo stato 2 (controllo web)\n");
+      //Serial.printf("Passato allo stato 2 (controllo web)\n");
       state = 2;
     } else {
       Serial.println(payload);  // print data recived from websocket
