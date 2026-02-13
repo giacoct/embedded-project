@@ -1,11 +1,11 @@
-# Embedded Software fo the IoT - project group 23
+# Embedded Software fo the IoT - project group 23 -SUNFLOWER
 Wrist joint with two axes, controlled by mobile device or automatic positioning. Demo using solar panels
 
-### Project Managers
+### Project Members
 Matteo Zambon
 Alessandro Weber
 Giacomo Castellan
-
+#
 ### Bill of materials:
 - 1 _ESP32 S3_ board
 - 1 Positional servo motor
@@ -56,6 +56,7 @@ The libraries you need to have are:
 - [AsyncTCP.h](https://github.com/ESP32Async/AsyncTCP)
 - [ESPAsyncWebServer.h](https://github.com/ESP32Async/ESPAsyncWebServer)
 
+#
 
 ### Who did what
 
@@ -66,6 +67,7 @@ The libraries you need to have are:
 | finite state machine diagram | finite state machine diagram | video                        |
 | PID tuning tool(vibe coded)  | presentation                 | electrical scheme            |
 
+#
 
 ### Sources:
 - ESP32-S3 documentation:
@@ -75,3 +77,9 @@ The libraries you need to have are:
 - Webserver & websocket for esp32: https://lastminuteengineers.com/esp32-websocket-tutorial/
 - Esp32 PWM Basicis: https://lastminuteengineers.com/esp32-pwm-tutorial/
 - ledc docs: https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/ledc.html#
+
+#
+
+### PRESENTATION:
+- [Video](https://youtu.be/n94C179-7IY)
+- [Presentation](https://drive.google.com/file/d/1SDzr-Ak0xUK7H76m8eDZOuBcJwM7BU4j/view?usp=drive_link)
