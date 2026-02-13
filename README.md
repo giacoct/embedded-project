@@ -89,10 +89,7 @@ The libraries you need to have are:
 | finite state machine diagram | finite state machine diagram | video                        |
 | video                        | presentation                 | electrical scheme            |
 
-### Links
-- [PPT Presentation](https://drive.google.com/file/d/1SDzr-Ak0xUK7H76m8eDZOuBcJwM7BU4j/view?usp=drive_link)
-- [Video Presentation]()
-
+#
 
 ### Sources:
 - ESP32-S3 documentation:
