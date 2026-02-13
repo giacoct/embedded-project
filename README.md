@@ -86,10 +86,10 @@ The libraries you need to have are:
 | esp code(libraries and main) | esp code(libraries and main) | esp code(libraries and main) |
 | 3D model and printing        | html development             | html development             |
 | finite state machine diagram | finite state machine diagram | video                        |
-|                              | presentation                 | electrical scheme            |
+| video                        | presentation                 | electrical scheme            |
 
 ### Links
-- [PPT Presentation]()
+- [PPT Presentation](https://drive.google.com/file/d/1mTUMiO71hmGW7UThBMXBz2UmjBgtTD3f/view?usp=drive_link)
 - [Video Presentation]()
 
 
