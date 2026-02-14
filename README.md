@@ -82,12 +82,12 @@ The libraries you need to have are:
 
 ### Who did what
 
-| Giacomo                      | Matteo                       | Alessandro                   |
-|:-----------------------------|:----------------------------:|-----------------------------:|
-| esp code(libraries and main) | esp code(libraries and main) | esp code(libraries and main) |
-| 3D model and printing        | html development             | html development             |
-| finite state machine diagram | finite state machine diagram | video                        |
-| video                        | presentation                 | electrical scheme            |
+| Giacomo                       | Matteo                        | Alessandro                    |
+|:------------------------------|:------------------------------|:------------------------------|
+| ESP code (libraries and main) | ESP code (libraries and main) | ESP code (libraries and main) |
+| 3D model and printing         | HTML development              | HTML development              |
+| Finite state machine diagram  | Finite state machine diagram  | Video                         |
+| Video                         | Presentation                  | Electrical scheme             |
 
 #
 
