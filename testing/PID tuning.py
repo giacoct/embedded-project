@@ -1,3 +1,6 @@
+# To use this file, UNCOMMENT the code on the ws handler 'handleWebSocketMessage()' in the 'esp32_solar_station.ino' file.
+
+# Requirement: install websocket library (pip install websockets)
 import tkinter as tk
 from tkinter import ttk
 import json

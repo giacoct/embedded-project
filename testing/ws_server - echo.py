@@ -2,7 +2,6 @@
 import asyncio
 import websockets
 
-# ip = "127.0.4.1"
 ip = "127.0.0.1"
 port = 81
 

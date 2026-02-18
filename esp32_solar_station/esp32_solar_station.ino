@@ -10,14 +10,14 @@
 #include "lightControl.h"
 
 const char *ssid = "SOLAR_MOBILE";
-const char *password = "militarygrade";
+const char *password = "password";
 
 // servo and base controller
 MotorController mc(8, 3, 0.0005);  // pin servo; pin base; kServo (higher is faster)
-                                   // see the setup to modify the mc constants
+                                   // see the setup() to modify the mc constants
 
 // photoresistors
-LightControl tl(6, 1.300);    //pin LDR, gain
+LightControl tl(6, 1.300);    // LDR pin; gain
 LightControl tr(5, 0.955);
 LightControl bl(4, 0.860);
 LightControl br(7, 1.008);
@@ -33,7 +33,7 @@ bool buttonPressed = false;
 uint64_t t0 = 0;
 
 // FSM state
-int state = 0;
+uint8_t state = 0;
 
 // AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -69,7 +69,7 @@ void setup() {
   pinMode(joystickPinY, INPUT);
   pinMode(joystickButtonPin, INPUT_PULLUP);
 
-  // interrupt on (joystick) button pin
+  // interrupt on joystick button pin
   attachInterrupt(digitalPinToInterrupt(joystickButtonPin), joystickClick, FALLING);
 
   // initialize Wi-Fi
@@ -92,7 +92,7 @@ void setup() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send_P(200, "text/html", index_html);
   });
-  server.begin();  // Start webserver
+  server.begin();  // start webserver
 }
 
 void loop() {
@@ -115,7 +115,7 @@ void loop() {
           buttonPressed = false;
           state = 1;
           mc.stopMotors();
-          //Serial.printf("Passato allo stato 3 (controllo manuel)\n");
+          Serial.println("State 3 - manual control");
         }
       }
       break;
@@ -128,11 +128,11 @@ void loop() {
           buttonPressed = false;
           state = 0;
           mc.stopMotors();
-          //Serial.printf("Passato allo stato 0 (controllo automatico)\n");
+          Serial.println("State 0 - autonomous control");
         }
       }
       break;
-    case 2:  // manual control thru websocket
+    case 2:  // manual control through websocket
       {
         mc.moveMotors();
         if (buttonPressed) {
@@ -140,7 +140,7 @@ void loop() {
           state = 1;
           ws.textAll("#no-web#");
           mc.stopMotors();
-          //Serial.printf("Passato allo stato 3 (controllo manuel)\n");
+          Serial.println("State 3 - manual control");
         }
       }
       break;
@@ -156,7 +156,7 @@ void loop() {
 
 /* * * * * * * * * * *  FUNCTIONS  * * * * * * * * * * */
 
-//handle client connections
+// handle client connections
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
   switch (type) {
     case WS_EVT_CONNECT:
@@ -179,9 +179,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   AwsFrameInfo *info = (AwsFrameInfo *)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
     data[len] = 0;
-
-    /*// code executed when a new message arrives from the ws     //used for calibration ->testing folder
     String payload = String((char *)data);
+
+    // UNCOMMENT TO USE 'PID tuning.py' -> 'testing' folder
+    /*
     if (payload.startsWith("#KB#")) {
       // base constant calibration
       mc.kpBase = payload.substring(4).toDouble();
@@ -191,7 +192,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     } else if (payload.startsWith("#DZ#")) {
       // deadzone calibration
       mc.deadzone = payload.substring(4).toInt();
-    } else*/ 
+    }
+    */ 
     if (payload.startsWith("#cord#") && state == 2) {
       // catch control data for the motors
       mc.setBaseSpeed(payload.substring(7, payload.indexOf(';')).toInt());
@@ -217,7 +219,7 @@ int mapWithCenter(int x, int inMin, int inCenter, int inMax, int outMin, int out
     return map(x, inCenter, inMax, center, outMax);
 }
 
-// interrupt
+// joystick button interrupt
 void IRAM_ATTR joystickClick() {
   unsigned long t1 = millis();
   if (t1 - t0 > 500) {  // 500 = debounce

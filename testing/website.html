@@ -118,7 +118,7 @@
   <script>
     const ws_info = document.getElementById('ws_info');
 
-    let connection = new WebSocket("ws://127.0.0.1:81");    // 192.168.4.1/ws
+    let connection = new WebSocket("ws://192.168.4.1/ws");    // 127.0.0.1:81
     connection.onopen = function () {
       ws_info.textContent = "Connected!";
       ws_info.style.color = "#069c56";
